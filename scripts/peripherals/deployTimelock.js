@@ -1,7 +1,12 @@
-const { deployContract, contractAt, sendTxn, getFrameSigner } = require("../shared/helpers")
-const { expandDecimals } = require("../../test/shared/utilities")
+const {
+  deployContract,
+  contractAt,
+  sendTxn,
+  getFrameSigner,
+} = require("../shared/helpers");
+const { expandDecimals } = require("../../test/shared/utilities");
 
-const network = (process.env.HARDHAT_NETWORK || 'mainnet');
+const network = process.env.HARDHAT_NETWORK || "mainnet";
 
 async function getArbValues() {
   const vault = await contractAt("Vault", "0x489ee077994B6658eAfA855C308275EAd8097C4A")
@@ -31,11 +36,11 @@ async function getAvaxValues() {
 
 async function getValues() {
   if (network === "arbitrum") {
-    return getArbValues()
+    return getArbValues();
   }
 
   if (network === "avax") {
-    return getAvaxValues()
+    return getAvaxValues();
   }
 }
 
@@ -78,8 +83,8 @@ async function main() {
     "0xD7941C4Ca57a511F21853Bbc7FBF8149d5eCb398", // G
     "0xfb481D70f8d987c1AE3ADc90B7046e39eb6Ad64B", // kr
     "0x99Aa3D1b3259039E8cB4f0B33d0Cfd736e1Bf49E", // quat
-    "0x6091646D0354b03DD1e9697D33A7341d8C93a6F5" // xhiroz
-  ]
+    "0x6091646D0354b03DD1e9697D33A7341d8C93a6F5", // xhiroz
+  ];
 
   for (let i = 0; i < handlers.length; i++) {
     const handler = handlers[i]
@@ -87,20 +92,26 @@ async function main() {
   }
 
   const keepers = [
-    "0x5F799f365Fa8A2B60ac0429C48B153cA5a6f0Cf8" // X
-  ]
+    "0x5F799f365Fa8A2B60ac0429C48B153cA5a6f0Cf8", // X
+  ];
 
   for (let i = 0; i < keepers.length; i++) {
-    const keeper = keepers[i]
-    await sendTxn(deployedTimelock.setKeeper(keeper, true), `deployedTimelock.setKeeper(${keeper})`)
+    const keeper = keepers[i];
+    await sendTxn(
+      deployedTimelock.setKeeper(keeper, true),
+      `deployedTimelock.setKeeper(${keeper})`
+    );
   }
 
-  await sendTxn(deployedTimelock.signalApprove(gmx.address, admin, "1000000000000000000"), "deployedTimelock.signalApprove")
+  await sendTxn(
+    deployedTimelock.signalApprove(gmx.address, admin, "1000000000000000000"),
+    "deployedTimelock.signalApprove"
+  );
 }
 
 main()
   .then(() => process.exit(0))
-  .catch(error => {
-    console.error(error)
-    process.exit(1)
-  })
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
