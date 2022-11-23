@@ -1,12 +1,40 @@
 const {
   deployContract,
   contractAt,
-  sendTxn,
   getFrameSigner,
+  writeTmpAddresses,
 } = require("../shared/helpers");
 const { expandDecimals } = require("../../test/shared/utilities");
 
 const network = process.env.HARDHAT_NETWORK || "mainnet";
+
+async function getTestnetValues() {
+  const vault = await contractAt(
+    "Vault",
+    "0xA57F00939D8597DeF1965FF4708921c56D9A36f3"
+  );
+  const tokenManager = {
+    address: "0x15f54d599ADF24b809de9B9C917061Ce0cB7617f",
+  };
+  const glpManager = { address: "0x5b7a04B9f5f88f215920fDcC704084349530Dcc7" };
+
+  const positionRouter = {
+    address: "0xb87a436B93fFE9D75c5cFA7bAcFff96430b09868",
+  };
+  const positionManager = {
+    address: "0x75E42e6f01baf1D6022bEa862A28774a9f8a4A0C",
+  };
+  const gmx = { address: "0xab1d62E6a2d4Db62DbB39Dc00544537b6b424659" };
+
+  return {
+    vault,
+    tokenManager,
+    glpManager,
+    positionRouter,
+    positionManager,
+    gmx,
+  };
+}
 
 async function getArbValues() {
   const vault = await contractAt("Vault", "0x489ee077994B6658eAfA855C308275EAd8097C4A")
@@ -41,6 +69,10 @@ async function getValues() {
 
   if (network === "avax") {
     return getAvaxValues();
+  }
+
+  if (network === "testnet") {
+    return getTestnetValues();
   }
 }
 
