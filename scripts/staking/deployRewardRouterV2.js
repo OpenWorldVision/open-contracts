@@ -18,7 +18,7 @@ async function main() {
     "0x5b7a04B9f5f88f215920fDcC704084349530Dcc7"
   );
   const glp = await contractAt(
-    "OLP",
+    "OAP",
     "0xC6012955CEF9137FE9B1C01361c41FBf7E8dFfD9"
   );
 

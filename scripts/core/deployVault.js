@@ -49,7 +49,7 @@ async function main() {
     "vaultPriceFeed.setIsAmmEnabled"
   );
 
-  const olp = await deployContract("OLP", []);
+  const olp = await deployContract("OAP", []);
   await sendTxn(
     olp.setInPrivateTransferMode(true),
     "olp.setInPrivateTransferMode"
