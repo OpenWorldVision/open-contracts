@@ -6,13 +6,13 @@ const network = (process.env.HARDHAT_NETWORK || 'mainnet');
 const tokens = require('./tokens')[network];
 
 async function getTestnetValues(){
-  const { btc, eth, usdc, link, uni, usdt, mim, frax, dai } = tokens
-  const tokenArr = [btc]
+  const { btc, bnb, busd} = tokens
+  const tokenArr = [btc, bnb, busd]
   const fastPriceTokens = []
-  // console.log(fastPriceTokens)
-  const priceFeedTimelock = { address: "0x20d80E3FDBDf9519058d8e68D1120A2189b4270B" }
 
-  const updater1 = { address: "0x0EaEA9558eFF1d4b76b347A39f54d8CDf01F990F" }
+  const priceFeedTimelock = { address: "0x11Ccc78ad8D3C2FfeB42Eca65934476D31794f5F" }
+
+  const updater1 = { address: "0x9B82B9Ab7570Ae452D9FF5411F1bE2bad08EF4c4" }
   const updater2 = { address: "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517" }
   const keeper1 = { address: "0x33EDbEc831AD335f26fFC06EB07311cC99F50084" }
   const keeper2 = { address: "0x3134d254202E5dd2d98E4ba10CaE3703199c3FB0" }
@@ -22,8 +22,8 @@ async function getTestnetValues(){
 
   const positionRouter = await contractAt("PositionRouter", "0x9B25fb7d0af7B36d9dF9b872d1e80D42F0278168")
 
-  // const fastPriceEvents = await contractAt("FastPriceEvents", "0x4530b7DE1958270A2376be192a24175D795e1b07")
-  const fastPriceEvents = await deployContract("FastPriceEvents", [])
+  const fastPriceEvents = await contractAt("FastPriceEvents", "0xf71d18652C3975e75fddd07396869f1ccA184C5a")
+  // const fastPriceEvents = await deployContract("FastPriceEvents", [])
 
   // const chainlinkFlags = { address: "0x3C14e07Edd0dC67442FA96f1Ec6999c57E810a83" }
 
@@ -176,7 +176,7 @@ async function main() {
       tokenItem.spreadBasisPoints // _spreadBasisPoints
     ), `vaultPriceFeed.setSpreadBasisPoints(${tokenItem.name}) ${tokenItem.spreadBasisPoints}`)
   }
-  console.log("D1",tokenArr)
+
   for (const token of tokenArr) {
     await sendTxn(vaultPriceFeed.setTokenConfig(
       token.address, // _token

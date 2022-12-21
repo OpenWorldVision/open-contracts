@@ -3,6 +3,7 @@ const {
   contractAt,
   getFrameSigner,
   writeTmpAddresses,
+  sendTxn
 } = require("../shared/helpers");
 const { expandDecimals } = require("../../test/shared/utilities");
 
@@ -19,12 +20,13 @@ async function getTestnetValues() {
   const glpManager = { address: "0x5b7a04B9f5f88f215920fDcC704084349530Dcc7" };
 
   const positionRouter = {
-    address: "0xb87a436B93fFE9D75c5cFA7bAcFff96430b09868",
+    address: "0x9B25fb7d0af7B36d9dF9b872d1e80D42F0278168",
   };
   const positionManager = {
-    address: "0x75E42e6f01baf1D6022bEa862A28774a9f8a4A0C",
+    address: "0x32Ca0C28cCef0BC31991EE4Ac286C27679e57222",
   };
   const gmx = { address: "0xab1d62E6a2d4Db62DbB39Dc00544537b6b424659" };
+  const rewardRouter = { address:"0x662634108dc549FE0d38291F5c4971a557525A5E" }
 
   return {
     vault,
@@ -33,6 +35,7 @@ async function getTestnetValues() {
     positionRouter,
     positionManager,
     gmx,
+    rewardRouter
   };
 }
 
@@ -79,8 +82,8 @@ async function getValues() {
 async function main() {
   const signer = await getFrameSigner()
 
-  const admin = "0x49B373D422BdA4C6BfCdd5eC1E48A9a26fdA2F8b"
-  const buffer = 24 * 60 * 60
+  const admin = "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517"
+  const buffer = network === "testnet"? 5 * 60 : 24 * 60 * 60
   const maxTokenSupply = expandDecimals("13250000", 18)
 
   const { vault, tokenManager, glpManager, rewardRouter, positionRouter, positionManager, gmx } = await getValues()
@@ -90,7 +93,6 @@ async function main() {
     admin,
     buffer,
     tokenManager.address,
-    rewardRouter.address,
     mintReceiver.address,
     glpManager.address,
     maxTokenSupply,
@@ -98,7 +100,7 @@ async function main() {
     500 // maxMarginFeeBasisPoints 5%
   ], "Timelock")
 
-  const deployedTimelock = await contractAt("Timelock", timelock.address, signer)
+  const deployedTimelock = await contractAt("Timelock", timelock.address)
 
   await sendTxn(deployedTimelock.setShouldToggleIsLeverageEnabled(true), "deployedTimelock.setShouldToggleIsLeverageEnabled(true)")
   await sendTxn(deployedTimelock.setContractHandler(positionRouter.address, true), "deployedTimelock.setContractHandler(positionRouter)")
@@ -111,11 +113,8 @@ async function main() {
   // await sendTxn(deployedTimelock.signalSetGov(vault.address, vaultGov.address), "deployedTimelock.signalSetGov(vault)")
 
   const handlers = [
-    "0x82429089e7c86B7047b793A9E7E7311C93d2b7a6", // coinflipcanada
-    "0xD7941C4Ca57a511F21853Bbc7FBF8149d5eCb398", // G
-    "0xfb481D70f8d987c1AE3ADc90B7046e39eb6Ad64B", // kr
-    "0x99Aa3D1b3259039E8cB4f0B33d0Cfd736e1Bf49E", // quat
-    "0x6091646D0354b03DD1e9697D33A7341d8C93a6F5", // xhiroz
+    "0x0EaEA9558eFF1d4b76b347A39f54d8CDf01F990F", // Tam
+    "0xd6E095046868c48f9a194c2b9875e29DF7C44C85", // Phuong
   ];
 
   for (let i = 0; i < handlers.length; i++) {
@@ -124,7 +123,7 @@ async function main() {
   }
 
   const keepers = [
-    "0x5F799f365Fa8A2B60ac0429C48B153cA5a6f0Cf8", // X
+    "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517", // Tam keeper
   ];
 
   for (let i = 0; i < keepers.length; i++) {

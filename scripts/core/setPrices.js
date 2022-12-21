@@ -9,7 +9,7 @@ async function main() {
   // const secondaryPriceFeed = await contractAt("FastPriceFeed", "0x06588aad1eCc1275CBF68ab192257714ac1ed89c")
   const vaultPriceFeed = await contractAt(
     "VaultPriceFeed",
-    "0xc4BB3af31A98B8069Ab6D1521Ddf4A951108f2A5"
+    "0xeaE0398FBD233f8b50bCC3Ba9e81F92598B77dd0"
   );
   const vault = await contractAt(
     "Vault",

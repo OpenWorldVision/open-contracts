@@ -38,7 +38,7 @@ async function getValues() {
 async function main() {
 
   const admin = "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517"
-  const buffer = 24 * 60 * 60
+  const buffer = network === "testnet" ? 60 : 24 * 60 * 60
 
   const { tokenManager } = await getValues()
 
@@ -64,7 +64,8 @@ async function main() {
   }
 
   const keepers = [
-    "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517" // deployer
+    "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517", // deployer
+    "0x9B82B9Ab7570Ae452D9FF5411F1bE2bad08EF4c4"
   ]
 
   for (let i = 0; i < keepers.length; i++) {
