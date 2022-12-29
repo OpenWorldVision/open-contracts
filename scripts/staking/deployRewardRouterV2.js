@@ -7,6 +7,7 @@ const {
 
 const network = process.env.HARDHAT_NETWORK || "mainnet";
 const tokens = require("../core/tokens")[network];
+const { AddressZero } = ethers.constants
 
 async function main() {
   const { nativeToken } = tokens;
