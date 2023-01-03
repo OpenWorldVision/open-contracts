@@ -12,10 +12,18 @@ const { AddressZero } = ethers.constants
 function getValues() {
   if (network === "bsc") {
     return {
-      glpManagerAddress: "0x7fc55B3C5f15f1B9664170DF18C57e13bB1B7D39",
-      glpAddress : "0x150bb59460E35084ab847629Cf3EcDC543e5Bf97",
-      esGmx: "",
-      stakedGlpTRacker: ""
+      glpManagerAddress: {
+        address: "0x7fc55B3C5f15f1B9664170DF18C57e13bB1B7D39"
+      },
+      glpAddress : {
+        address: "0x150bb59460E35084ab847629Cf3EcDC543e5Bf97"
+      },
+      esGmx: {
+        address: "0x49B30A264Cf99F121fdbd524b6D150525FB97f6A"
+      },
+      stakedGlpTracker: {
+        address: ""
+      }
     }
   }
 
@@ -41,8 +49,7 @@ async function main() {
   const { nativeToken } = tokens;
 
   const vestingDuration = 365 * 24 * 60 * 60;
-  const { glpAddress, glpManagerAddress, stakedGlpTracker:stakedGlpTrackerAddr, esGmx } = getValues()
-  const stakedGlpTracker = await contractAt("RewardTracker", stakedGlpTrackerAddr.address)
+  const { glpAddress, glpManagerAddress, stakedGlpTracker: stakedGlpTrackerAddr, esGmx } = getValues()
   const glpManager = await contractAt(
     "GlpManager",
     glpManagerAddress.address
@@ -57,31 +64,35 @@ async function main() {
     "glp.setInPrivateTransferMode"
   );
   // FIXME: Run in BSC
-  // const feeGlpTracker = await deployContract("RewardTracker", [
-  //   "Fee OAP",
-  //   "fOAP",
-  // ]);
-
-  const feeGlpTracker = await contractAt("RewardTracker", "0xa5c9f9deebaafcf46836c20105aeece58057634b")
+  const feeGlpTracker = await deployContract("RewardTracker", [
+    "Fee OAP",
+    "fOAP",
+  ]);
+  // FIXME: Run in BSC Testnet
+  // const feeGlpTracker = await contractAt("RewardTracker", "0xa5c9f9deebaafcf46836c20105aeece58057634b")
   const feeGlpDistributor = await deployContract("RewardDistributor", [
     nativeToken.address,
     feeGlpTracker.address,
   ]);
 
   // FIXME: Run in BSC
-  // await sendTxn(
-  //   feeGlpTracker.initialize([glp.address], feeGlpDistributor.address),
-  //   "feeGlpTracker.initialize"
-  // );
+  await sendTxn(
+    feeGlpTracker.initialize([glp.address], feeGlpDistributor.address),
+    "feeGlpTracker.initialize"
+  );
   await sendTxn(
     feeGlpDistributor.updateLastDistributionTime(),
     "feeGlpDistributor.updateLastDistributionTime"
   );
 
-  // const stakedGlpTracker = await deployContract("RewardTracker", [
-  //   "Fee + Staked OAP",
-  //   "fsOAP",
-  // ]);
+  // FIXME: Run in BSC Testnet
+  // const stakedGlpTracker = await contractAt("RewardTracker", stakedGlpTrackerAddr.address)
+
+  // FIXME: Run in BSC
+  const stakedGlpTracker = await deployContract("RewardTracker", [
+    "Fee + Staked OAP",
+    "fsOAP",
+  ]);
 
   const stakedGlpDistributor = await deployContract("RewardDistributor", [
     esGmx.address,
@@ -105,13 +116,13 @@ async function main() {
     AddressZero // glpVester
   ), "rewardRouter.initialize")
   // FIXME: Run in BSC
-  // await sendTxn(
-  //   stakedGlpTracker.initialize(
-  //     [feeGlpTracker.address],
-  //     stakedGlpDistributor.address
-  //   ),
-  //   "stakedGlpTracker.initialize"
-  // );
+  await sendTxn(
+    stakedGlpTracker.initialize(
+      [feeGlpTracker.address],
+      stakedGlpDistributor.address
+    ),
+    "stakedGlpTracker.initialize"
+  );
   await sendTxn(
     stakedGlpDistributor.updateLastDistributionTime(),
     "stakedGlpDistributor.updateLastDistributionTime"
