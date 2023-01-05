@@ -19,6 +19,8 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
     address public depositToken;
     uint256 public unstakingFee = 25; // 0.25%
 
+    uint256 public unstakingThreshold = 2 * 24 * 60 * 60; // 1 day
+
     event Submitted(address indexed sender, uint256 amount, address referral);
 
     modifier isOperator(address _sender) {
@@ -93,6 +95,12 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
 
     function _unstake() internal returns (uint256) {
         address account = msg.sender;
+        require(
+            lastClaimTimestamp[account].add(unstakingThreshold) <=
+                block.timestamp,
+            "OpenStaking: threshold time not reach"
+        );
+
         uint256 shareAmount = sharesOf(account);
         stakedAmounts[account] = 0;
         uint256 amountAfterFee = getAmountAfterFee(
@@ -117,6 +125,14 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
         unstakingFee = _fee;
     }
 
+    function setUnstakingThreshold(uint256 _threshold)
+        public
+        isOperator(msg.sender)
+    {
+        require(_threshold != 0, "OpenStaking: invalid threshold");
+        unstakingThreshold = _threshold;
+    }
+
     function getStakedAmount(address _account) public view returns (uint256) {
         return stakedAmounts[_account];
     }
@@ -126,12 +142,15 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
         view
         returns (uint256[] memory)
     {
-        uint256[] memory result = new uint256[](5);
+        uint256[] memory result = new uint256[](8);
         result[0] = getTotalPooledEther();
         result[1] = getTotalShares();
         result[2] = sharesOf(_account);
         result[3] = getStakedAmount(_account);
         result[4] = balanceOf(_account);
+        result[5] = lastClaimTimestamp[_account];
+        result[6] = unstakingFee;
+        result[7] = unstakingThreshold;
         return result;
     }
 
