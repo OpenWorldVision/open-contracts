@@ -19,7 +19,7 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
     address public depositToken;
     uint256 public unstakingFee = 25; // 0.25%
 
-    uint256 public unstakingThreshold = 2 * 24 * 60 * 60; // 1 day
+    uint256 public unstakingThreshold = 2 * 24 * 60 * 60; // 2 day
 
     event Submitted(address indexed sender, uint256 amount, address referral);
 
