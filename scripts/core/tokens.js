@@ -20,8 +20,8 @@ module.exports = {
       maxUsdgAmount: 50 * 1000 * 1000,
       isShortable: true,
       isStable: false,
-      maxGlobalLongSize: 20 * 1000 * 1000,
-      maxGlobalShortSize: 15 * 1000 * 1000,
+      maxGlobalLongSize: 2 * 1000 * 1000,
+      maxGlobalShortSize: 500 * 1000,
       minProfitBps: 0,
     },
     eth: {
@@ -53,8 +53,8 @@ module.exports = {
       bufferAmount: 5500,
       isStable: false,
       isShortable: true,
-      maxGlobalLongSize: 10 * 1000 * 1000,
-      maxGlobalShortSize: 5 * 1000 * 1000,
+      maxGlobalLongSize: 2 * 1000 * 1000,
+      maxGlobalShortSize: 500 * 1000,
     },
     busd: {
       name: "busd",
