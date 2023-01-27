@@ -228,47 +228,17 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
         bool _shouldConvertWethToEth
     ) external nonReentrant {
         address account = msg.sender;
-
-        uint256 openAmount = 0;
-        if (_shouldClaimOpen) {
-            uint256 openAmount0 = IVester(openVester).claimForAccount(account, account);
-            uint256 openAmount1 = IVester(oapVester).claimForAccount(account, account);
-            openAmount = openAmount0.add(openAmount1);
-        }
-
-        if (_shouldStakeOpen && openAmount > 0) {
-            _stakeOpen(account, account, open, openAmount);
-        }
-
-        uint256 esOpenAmount = 0;
-        if (_shouldClaimEsOpen) {
-            uint256 esOpenAmount0 = IRewardTracker(stakedOpenTracker).claimForAccount(account, account);
-            uint256 esOpenAmount1 = IRewardTracker(stakedOapTracker).claimForAccount(account, account);
-            esOpenAmount = esOpenAmount0.add(esOpenAmount1);
-        }
-
-        if (_shouldStakeEsOpen && esOpenAmount > 0) {
-            _stakeOpen(account, account, esOpen, esOpenAmount);
-        }
-
-        if (_shouldStakeMultiplierPoints) {
-            uint256 bnOpenAmount = IRewardTracker(bonusOpenTracker).claimForAccount(account, account);
-            if (bnOpenAmount > 0) {
-                IRewardTracker(feeOpenTracker).stakeForAccount(account, account, bnOpen, bnOpenAmount);
-            }
-        }
-
         if (_shouldClaimWeth) {
             if (_shouldConvertWethToEth) {
-                uint256 weth0 = IRewardTracker(feeOpenTracker).claimForAccount(account, address(this));
+                // uint256 weth0 = IRewardTracker(feeOpenTracker).claimForAccount(account, address(this));
                 uint256 weth1 = IRewardTracker(feeOapTracker).claimForAccount(account, address(this));
 
-                uint256 wethAmount = weth0.add(weth1);
+                uint256 wethAmount = weth1;
                 IWETH(weth).withdraw(wethAmount);
 
                 payable(account).sendValue(wethAmount);
             } else {
-                IRewardTracker(feeOpenTracker).claimForAccount(account, account);
+                // IRewardTracker(feeOpenTracker).claimForAccount(account, account);
                 IRewardTracker(feeOapTracker).claimForAccount(account, account);
             }
         }

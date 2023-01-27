@@ -43,6 +43,21 @@ async function getAvaxValues(signer) {
   return { rewardToken, tokenDecimals, rewardTrackerArr }
 }
 
+async function getBscValues() {
+  const rewardToken = await contractAt("Token", "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c")
+  const tokenDecimals = 18
+
+  const rewardTrackerArr = [
+    {
+      name: "feeGlpTracker",
+      address: "0x5E1e7da3A3eD2C77b9b8B70A2FB63dF980806Dc8",
+      transferAmount: "1.7"
+    }
+  ]
+
+  return { rewardToken, tokenDecimals, rewardTrackerArr }
+}
+
 function getValues(signer) {
   if (network === "arbitrum") {
     return getArbValues(signer)
@@ -50,6 +65,10 @@ function getValues(signer) {
 
   if (network === "avax") {
     return getAvaxValues(signer)
+  }
+
+  if (network === "bsc") {
+    return getBscValues()
   }
 }
 
@@ -64,12 +83,12 @@ async function main() {
     const rewardDistributorAddress = await rewardTracker.distributor()
     const rewardDistributor = await contractAt("RewardDistributor", rewardDistributorAddress)
     const convertedTransferAmount = ethers.utils.parseUnits(transferAmount, tokenDecimals)
-    const rewardsPerInterval = convertedTransferAmount.div(7 * 24 * 60 * 60)
+    const rewardsPerInterval = convertedTransferAmount.div(35 * 24 * 60 * 60)
     console.log("rewardDistributorAddress", rewardDistributorAddress)
     console.log("convertedTransferAmount", convertedTransferAmount.toString())
     console.log("rewardsPerInterval", rewardsPerInterval.toString())
 
-    await sendTxn(rewardToken.transfer(rewardDistributorAddress, convertedTransferAmount, { gasLimit: 500000 }), `rewardToken.transfer ${i}`)
+    // await sendTxn(rewardToken.transfer(rewardDistributorAddress, convertedTransferAmount, { gasLimit: 500000 }), `rewardToken.transfer ${i}`)
     await updateTokensPerInterval(rewardDistributor, rewardsPerInterval, "rewardDistributor")
   }
 }
