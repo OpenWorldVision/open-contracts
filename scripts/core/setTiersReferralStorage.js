@@ -17,6 +17,18 @@ async function getAvaxValues() {
   return { referralStorage }
 }
 
+async function getTestnetValues() {
+  const referralStorage = await contractAt("ReferralStorage", "0xcFB491149F0a037EfcF5A0323cc460C8a83635Fa")
+
+  return { referralStorage }
+}
+
+async function getBscValues() {
+  const timelock = await contractAt("Timelock", "0x51d2e6c7b6cc67875d388adbe2bb7a8238ea6353")
+  const referralStorage = await contractAt("ReferralStorage", "0xB393A3d6456305628339461264e7EFbABB38086d")
+  return { referralStorage, timelock }
+}
+
 async function getValues() {
   if (network === "arbitrum") {
     return getArbValues()
@@ -25,17 +37,35 @@ async function getValues() {
   if (network === "avax") {
     return getAvaxValues()
   }
+
+  if (network === "testnet") {
+    return getTestnetValues()
+  }
+
+  if (network === "bsc"){
+    return getBscValues()
+  }
 }
 
 async function main() {
   const { referralStorage } = await getValues()
 
+  if (network === "bsc") {
+    const { timelock } = await getValues()
+    await sendTxn(timelock.setTier(referralStorage.address, 0, 1000, 5000), "referralStorage.setTier 0")
+    await sendTxn(timelock.setTier(referralStorage.address, 1, 2000, 5000), "referralStorage.setTier 1")
+    await sendTxn(timelock.setTier(referralStorage.address, 2, 2500, 4000), "referralStorage.setTier 2")
+    return
+  }
+
   await sendTxn(referralStorage.setTier(0, 1000, 5000), "referralStorage.setTier 0")
   await sendTxn(referralStorage.setTier(1, 2000, 5000), "referralStorage.setTier 1")
   await sendTxn(referralStorage.setTier(2, 2500, 4000), "referralStorage.setTier 2")
 
-  await sendTxn(referralStorage.setReferrerTier("0xbb00f2E53888E60974110d68F1060e5eAAB34790", 1), "referralStorage.setReferrerTier 1")
-  await sendTxn(referralStorage.setReferrerTier("0x5F799f365Fa8A2B60ac0429C48B153cA5a6f0Cf8", 2), "referralStorage.setReferrerTier 2")
+  // await sendTxn(referralStorage.setReferrerTier("0x6b731F981e61db67A875aF0742D6d9d933634e56", 1), "referralStorage.setReferrerTier 1")
+  // await sendTxn(referralStorage.setReferrerTier("0xEAb042614200C538c796A7b48D5e42929cDe3Fb4", 1), "referralStorage.setReferrerTier 2")
+  // await sendTxn(referralStorage.setReferrerTier("0x2eE5Aaae7be7BD69bDD39103Ce85C7F0376aAB72", 1), "referralStorage.setReferrerTier 2")
+
 }
 
 main()

@@ -6,26 +6,17 @@ const { expandDecimals, bigNumberify } = require("../../test/shared/utilities")
 const ethPrice = "1140"
 const avaxPrice = "13"
 const gmxPrice = "41"
+const bnbPrice= "280"
 
-const shouldSendTxn = false
+const shouldSendTxn = true
 
-let arbitrumFile
-if (process.env.ARBITRUM_FILE) {
-  arbitrumFile = path.join(process.env.PWD, process.env.ARBITRUM_FILE)
-} else {
-  arbitrumFile = path.join(__dirname, "../../distribution-data-arbitrum.json")
-}
-console.log("Arbitrum file: %s", arbitrumFile)
-const arbitrumData = require(arbitrumFile)
+let bnbFile = path.join(__dirname, "../../weekly_distribution_bsc_1673601008.json")
 
-let avalancheFile
-if (process.env.AVALANCHE_FILE) {
-  avalancheFile = path.join(process.env.PWD, process.env.AVALANCHE_FILE)
-} else {
-  avalancheFile = path.join(__dirname, "../../distribution-data-avalanche.json")
-}
-console.log("Avalanche file: %s", avalancheFile)
-const avaxData = require(avalancheFile)
+const bnbData = require(bnbFile)
+
+console.log("BNB file: %s", bnbFile)
+
+// const avaxData = require(avalancheFile)
 
 const network = (process.env.HARDHAT_NETWORK || 'mainnet');
 const tokens = require('../core/tokens')[network];
@@ -50,6 +41,16 @@ async function getAvaxValues() {
   return { batchSender, esGmx, nativeTokenPrice, data }
 }
 
+
+async function getTestnetValues() {
+  const batchSender = await contractAt("BatchSender", "0xdBD22517fe1F7C2C659487a38eEA55B2dF61d12e")
+  const esGmx = await contractAt("Token", "0xFf1489227BbAAC61a9209A08929E4c2a526DdD17")
+  const nativeTokenPrice = bnbPrice
+  const data = bnbData
+
+  return { batchSender, esGmx, nativeTokenPrice, data }
+}
+
 async function getValues() {
   if (network === "arbitrum") {
     return getArbValues()
@@ -58,10 +59,14 @@ async function getValues() {
   if (network === "avax") {
     return getAvaxValues()
   }
+
+  if (network === "testnet") {
+    return getTestnetValues()
+  }
 }
 
 async function main() {
-  const wallet = { address: "0x5F799f365Fa8A2B60ac0429C48B153cA5a6f0Cf8" }
+  const wallet = { address: "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517" }
   const { batchSender, esGmx, nativeTokenPrice, data } = await getValues()
   const { nativeToken } = tokens
   const nativeTokenContract = await contractAt("Token", nativeToken.address)
@@ -69,8 +74,8 @@ async function main() {
   const affiliatesData = data.referrers
   const discountsData = data.referrals
 
-  console.log("affiliates", affiliatesData.length)
-  console.log("trader discounts", discountsData.length)
+  console.log("Affiliates", affiliatesData.length)
+  console.log("Trader discounts", discountsData.length)
 
   const affiliateRewardsTypeId = 1
   const traderDiscountsTypeId = 2
@@ -90,7 +95,7 @@ async function main() {
   const esGmxAmounts = []
 
   for (let i = 0; i < affiliatesData.length; i++) {
-    const { account, rebateUsd, esgmxRewardsUsd } = affiliatesData[i]
+    const { account, rebateUsd } = affiliatesData[i]
     allAffiliateUsd = allAffiliateUsd.add(rebateUsd)
 
     if (account === AddressZero) { continue }
@@ -101,12 +106,12 @@ async function main() {
     totalAffiliateAmount = totalAffiliateAmount.add(amount)
     totalAffiliateUsd = totalAffiliateUsd.add(rebateUsd)
 
-    if (esgmxRewardsUsd) {
-      const esGmxAmount = bigNumberify(esgmxRewardsUsd).mul(expandDecimals(1, 18)).div(expandDecimals(gmxPrice, 30))
-      esGmxAccounts.push(account)
-      esGmxAmounts.push(esGmxAmount)
-      totalEsGmxAmount = totalEsGmxAmount.add(esGmxAmount)
-    }
+    // if (esgmxRewardsUsd) {
+    //   const esGmxAmount = bigNumberify(esgmxRewardsUsd).mul(expandDecimals(1, 18)).div(expandDecimals(gmxPrice, 30))
+    //   esGmxAccounts.push(account)
+    //   esGmxAmounts.push(esGmxAmount)
+    //   totalEsGmxAmount = totalEsGmxAmount.add(esGmxAmount)
+    // }
   }
 
   for (let i = 0; i < discountsData.length; i++) {
@@ -149,7 +154,7 @@ async function main() {
 
   if (shouldSendTxn) {
     const signer = await getFrameSigner()
-    const nativeTokenForSigner = await contractAt("Token", nativeToken.address, signer)
+    const nativeTokenForSigner = await contractAt("Token", nativeToken.address)
     await sendTxn(nativeTokenForSigner.transfer(wallet.address, totalNativeAmount), "nativeTokenForSigner.transfer")
 
     const printBatch = (currentBatch) => {
@@ -181,16 +186,6 @@ async function main() {
       await sendTxn(batchSender.sendAndEmit(nativeToken.address, accounts, amounts, traderDiscountsTypeId), "batchSender.sendAndEmit(nativeToken, trader rebates)")
     })
 
-    await sendTxn(esGmx.approve(batchSender.address, totalEsGmxAmount), "esGmx.approve")
-
-    await processBatch([esGmxAccounts, esGmxAmounts], batchSize, async (currentBatch) => {
-      printBatch(currentBatch)
-
-      const accounts = currentBatch.map((item) => item[0])
-      const amounts = currentBatch.map((item) => item[1])
-
-      await sendTxn(batchSender.sendAndEmit(esGmx.address, accounts, amounts, affiliateRewardsTypeId), "batchSender.sendAndEmit(nativeToken, esGmx affiliate rewards)")
-    })
   }
 }
 

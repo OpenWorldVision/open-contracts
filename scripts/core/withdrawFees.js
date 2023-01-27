@@ -35,12 +35,12 @@ async function withdrawFeesTestnet() {
 }
 
 async function withdrawFeesBsc() {
-  const receiver = { address: "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517" }
-  const vault = await contractAt("Vault", "0xA57F00939D8597DeF1965FF4708921c56D9A36f3")
+  const receiver = { address: "0x5678917FfEb77827Aafc33419E99DaCd707313a9" }
+  const vault = await contractAt("Vault", "0x547a29352421e7273eA18Acce5fb8aa308290523")
   const gov = await contractAt("Timelock", await vault.gov())
-  const { btc, bnb, busd} = tokens
+  const { btc, bnb, busd, eth} = tokens
 
-  const tokenArr = [btc, bnb, busd]
+  const tokenArr = [btc, bnb, busd, eth]
 
   for (let i = 0; i < tokenArr.length; i++) {
     const token = await contractAt("Token", tokenArr[i].address)
