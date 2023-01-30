@@ -43,6 +43,23 @@ function getValues() {
       },
     }
   }
+
+  if (network === "harmony") {
+    return {
+      glpManagerAddress: {
+        address: "0x946d6672cB1E344C89B754b422b3A5eB5C1e26Ad"
+      },
+      glpAddress : {
+        address: "0x93746Ae82a533A986F287f3a54E3c2f83da43661"
+      },
+      esGmx: {
+        address: "0xF858Fd0d583Fa55818E72c447EBee221C13bbf51"
+      },
+      stakedGlpTracker: {
+        address: "0xb71493222f5899407e01b840a428c33b9c03211d"
+      },
+    }
+  }
 }
 
 async function main() {
@@ -63,44 +80,44 @@ async function main() {
     glp.setInPrivateTransferMode(true),
     "glp.setInPrivateTransferMode"
   );
-  // FIXME: Run in BSC
-  // const feeGlpTracker = await deployContract("RewardTracker", [
-  //   "Fee OAP",
-  //   "fOAP",
-  // ]);
+  // FIXME: Run in BSC, Harmony
+  const feeGlpTracker = await deployContract("RewardTracker", [
+    "Fee OAP",
+    "fOAP",
+  ]);
   // FIXME: Run in BSC Testnet
-  const feeGlpTracker = await contractAt("RewardTracker", "0x5e1e7da3a3ed2c77b9b8b70a2fb63df980806dc8")
-  // const feeGlpDistributor = await deployContract("RewardDistributor", [
-  //   nativeToken.address,
-  //   feeGlpTracker.address,
-  // ]);
+  // const feeGlpTracker = await contractAt("RewardTracker", "0x5e1e7da3a3ed2c77b9b8b70a2fb63df980806dc8")
+  const feeGlpDistributor = await deployContract("RewardDistributor", [
+    nativeToken.address,
+    feeGlpTracker.address,
+  ]);
 
   // const feeGlpDistributor = await contractAt("RewardDistributor", "0xeccafb5a6250ab005c25b8fdfc7390c087dc2556 ")
 
-  // FIXME: Run in BSC
-  // await sendTxn(
-  //   feeGlpTracker.initialize([glp.address], feeGlpDistributor.address),
-  //   "feeGlpTracker.initialize"
-  // );
-  // await sendTxn(
-  //   feeGlpDistributor.updateLastDistributionTime(),
-  //   "feeGlpDistributor.updateLastDistributionTime"
-  // );
+  // FIXME: Run in BSC, Harmony
+  await sendTxn(
+    feeGlpTracker.initialize([glp.address], feeGlpDistributor.address),
+    "feeGlpTracker.initialize"
+  );
+  await sendTxn(
+    feeGlpDistributor.updateLastDistributionTime(),
+    "feeGlpDistributor.updateLastDistributionTime"
+  );
 
   // FIXME: Run in BSC Testnet
-  const stakedGlpTracker = await contractAt("RewardTracker", "0x6d9a7b767354cc8c1f658b1b1b547af218eb3c57")
+  // const stakedGlpTracker = await contractAt("RewardTracker", "0x6d9a7b767354cc8c1f658b1b1b547af218eb3c57")
 
-  // FIXME: Run in BSC
-  // const stakedGlpTracker = await deployContract("RewardTracker", [
-  //   "Fee + Staked OAP",
-  //   "fsOAP",
-  // ]);
+  // FIXME: Run in BSC, Harmony
+  const stakedGlpTracker = await deployContract("RewardTracker", [
+    "Fee + Staked OAP",
+    "fsOAP",
+  ]);
 
   // const stakedGlpDistributor = await contractAt("RewardDistributor", "0xa35b7de62a164cf02fe93a6a080c448252b227e9")
-  // const stakedGlpDistributor = await deployContract("RewardDistributor", [
-  //   esGmx.address,
-  //   stakedGlpTracker.address,
-  // ]);
+  const stakedGlpDistributor = await deployContract("RewardDistributor", [
+    esGmx.address,
+    stakedGlpTracker.address,
+  ]);
 
   const rewardRouter = await deployContract("RewardRouterV2", [])
   await sendTxn(rewardRouter.initialize(
@@ -118,35 +135,35 @@ async function main() {
     AddressZero, // _gmxVester
     AddressZero // glpVester
   ), "rewardRouter.initialize")
-  // FIXME: Run in BSC
-  // await sendTxn(
-  //   stakedGlpTracker.initialize(
-  //     [feeGlpTracker.address],
-  //     stakedGlpDistributor.address
-  //   ),
-  //   "stakedGlpTracker.initialize"
-  // );
-  // await sendTxn(
-  //   stakedGlpDistributor.updateLastDistributionTime(),
-  //   "stakedGlpDistributor.updateLastDistributionTime"
-  // );
+  // FIXME: Run in BSC, Harmony
+  await sendTxn(
+    stakedGlpTracker.initialize(
+      [feeGlpTracker.address],
+      stakedGlpDistributor.address
+    ),
+    "stakedGlpTracker.initialize"
+  );
+  await sendTxn(
+    stakedGlpDistributor.updateLastDistributionTime(),
+    "stakedGlpDistributor.updateLastDistributionTime"
+  );
 
-  // await sendTxn(
-  //   feeGlpTracker.setInPrivateTransferMode(true),
-  //   "feeGlpTracker.setInPrivateTransferMode"
-  // );
-  // await sendTxn(
-  //   feeGlpTracker.setInPrivateStakingMode(true),
-  //   "feeGlpTracker.setInPrivateStakingMode"
-  // );
-  // await sendTxn(
-  //   stakedGlpTracker.setInPrivateTransferMode(true),
-  //   "stakedGlpTracker.setInPrivateTransferMode"
-  // );
-  // await sendTxn(
-  //   stakedGlpTracker.setInPrivateStakingMode(true),
-  //   "stakedGlpTracker.setInPrivateStakingMode"
-  // );
+  await sendTxn(
+    feeGlpTracker.setInPrivateTransferMode(true),
+    "feeGlpTracker.setInPrivateTransferMode"
+  );
+  await sendTxn(
+    feeGlpTracker.setInPrivateStakingMode(true),
+    "feeGlpTracker.setInPrivateStakingMode"
+  );
+  await sendTxn(
+    stakedGlpTracker.setInPrivateTransferMode(true),
+    "stakedGlpTracker.setInPrivateTransferMode"
+  );
+  await sendTxn(
+    stakedGlpTracker.setInPrivateStakingMode(true),
+    "stakedGlpTracker.setInPrivateStakingMode"
+  );
 
   await sendTxn(
     glpManager.setHandler(rewardRouter.address, true),
@@ -154,15 +171,15 @@ async function main() {
   );
 
   // allow stakedGlpTracker to stake feeGlpTracker
-  // await sendTxn(
-  //   feeGlpTracker.setHandler(stakedGlpTracker.address, true),
-  //   "feeGlpTracker.setHandler(stakedGlpTracker)"
-  // );
+  await sendTxn(
+    feeGlpTracker.setHandler(stakedGlpTracker.address, true),
+    "feeGlpTracker.setHandler(stakedGlpTracker)"
+  );
   // // allow feeGlpTracker to stake glp
-  // await sendTxn(
-  //   glp.setHandler(feeGlpTracker.address, true),
-  //   "glp.setHandler(feeGlpTracker)"
-  // );
+  await sendTxn(
+    glp.setHandler(feeGlpTracker.address, true),
+    "glp.setHandler(feeGlpTracker)"
+  );
 
   // allow rewardRouter to stake in feeGlpTracker
   await sendTxn(

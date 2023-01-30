@@ -9,6 +9,34 @@ const { expandDecimals } = require("../../test/shared/utilities");
 
 const network = process.env.HARDHAT_NETWORK || "mainnet";
 
+async function getHarmonyValues() {
+  const vault = await contractAt(
+    "Vault",
+    "0x94ac069FA3672fe67b7A6e3f39EA47489864EFa4"
+  );
+  const tokenManager = {
+    address: "0x0000000000000000000000000000000000000000",
+  };
+  const glpManager = { address: "0x946d6672cB1E344C89B754b422b3A5eB5C1e26Ad" };
+
+
+  const positionManager = {
+    address: "0x0000000000000000000000000000000000000000",
+  };
+  const open = { address: "0x27a339d9B59b21390d7209b78a839868E319301B" };
+  // const rewardRouter = { address:"0x662634108dc549FE0d38291F5c4971a557525A5E" }
+
+  return {
+    vault,
+    tokenManager,
+    glpManager,
+    // positionRouter,
+    positionManager,
+    open,
+    // rewardRouter
+  };
+}
+
 async function getBscValues() {
   const vault = await contractAt(
     "Vault",
@@ -108,6 +136,10 @@ async function getValues() {
 
   if (network === "bsc") {
     return getBscValues();
+  }
+
+  if (network === "harmony") {
+    return getHarmonyValues();
   }
 }
 
