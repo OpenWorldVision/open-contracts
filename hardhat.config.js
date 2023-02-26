@@ -23,6 +23,9 @@ const {
   POLYGON_URL,
   MAINNET_URL,
   MAINNET_DEPLOY_KEY,
+  HARMONY_URL,
+  HARMONY_API_KEY,
+  HARMONY_DEPLOY_KEY,
 } = require("./env.json");
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -222,6 +225,12 @@ module.exports = {
       gasPrice: 50000000000,
       accounts: [MAINNET_DEPLOY_KEY],
     },
+    harmony: {
+      url: HARMONY_URL,
+      gasPrice: 105000000000,
+      chainId: 1666600000,
+      accounts: [HARMONY_DEPLOY_KEY],
+    },
   },
   etherscan: {
     apiKey: {
@@ -231,6 +240,7 @@ module.exports = {
       bsc: BSCSCAN_API_KEY,
       bscTestnet: BSCSCAN_API_KEY,
       polygon: POLYGONSCAN_API_KEY,
+      harmony: HARMONY_API_KEY,
     },
   },
   solidity: {

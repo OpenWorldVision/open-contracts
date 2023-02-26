@@ -6,14 +6,14 @@ const network = (process.env.HARDHAT_NETWORK || 'mainnet');
 const tokens = require('./tokens')[network];
 
 async function main() {
-  const vault = await contractAt("Vault", "0x547a29352421e7273eA18Acce5fb8aa308290523")
-  const timelock = await contractAt("Timelock", "0x51d2E6c7B6cc67875D388aDbE2BB7A8238EA6353")
+  const vault = await contractAt("Vault", "0x94ac069FA3672fe67b7A6e3f39EA47489864EFa4")
+  const timelock = await contractAt("Timelock", "0x3084DECAeBf765AA916f98CF034610200b197158")
 
-  const { btc, eth, bnb, busd} = tokens
-  const tokenArr = [bnb, btc, busd, eth]
+  const { one, btc, usdc, eth } = tokens
+  const tokenArr = [ btc, usdc]
 
   for (const token of tokenArr) {
-    await sendTxn(timelock.signalVaultSetTokenConfig(
+    await sendTxn(timelock.vaultSetTokenConfig(
       vault.address,
       token.address, // _token
       token.decimals, // _tokenDecimals

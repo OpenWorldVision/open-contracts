@@ -12,6 +12,41 @@ const { toUsd } = require("../../test/shared/units");
 const network = process.env.HARDHAT_NETWORK || "mainnet";
 const tokens = require("./tokens")[network];
 
+async function getHarmonyValues(signer) {
+  const vault = await contractAt(
+    "Vault",
+    "0x94ac069FA3672fe67b7A6e3f39EA47489864EFa4"
+  );
+
+  const timelock = await contractAt(
+    "Timelock",
+    "0x3084DECAeBf765AA916f98CF034610200b197158"
+  );
+  const router = await contractAt("Router", await vault.router());
+  const weth = await contractAt("WETH", tokens.nativeToken.address);
+
+  const referralStorage = await contractAt(
+    "ReferralStorage",
+    "0x066836a277FF4d9f8f4F01DC6cCe3Fc6f43e18f7"
+  );
+  const shortsTracker = await contractAt(
+    "ShortsTracker",
+    "0x072f46dA9568a7088838e23653d27542356b20d6"
+  );
+  const depositFee = "30"; // 0.3%
+  const minExecutionFee = "300000000000000000"; // 0.3 ONE
+  return {
+    vault,
+    timelock,
+    router,
+    weth,
+    referralStorage,
+    shortsTracker,
+    depositFee,
+    minExecutionFee,
+  };
+}
+
 async function getBscValues(signer) {
   const vault = await contractAt(
     "Vault",
@@ -162,6 +197,10 @@ async function getValues(signer) {
 
   if (network === "bsc") {
     return getBscValues(signer)
+  }
+
+  if (network === "harmony") {
+    return getHarmonyValues(signer)
   }
 }
 
