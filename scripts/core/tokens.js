@@ -481,7 +481,7 @@ module.exports = {
     btc: {
       name: "btc",
       address: "0x3095c7557bcb296ccc6e363de01b760ba031f2d9",
-      decimals: 18,
+      decimals: 8,
       priceFeed: "0x3C41439Eb1bF3BA3b2C3f8C921088b267f8d11f4",
       priceDecimals: 8,
       isStrictStable: false,
@@ -528,7 +528,7 @@ module.exports = {
     usdc: {
       name: "usdc",
       address: "0x985458e523db3d53125813ed68c274899e9dfab4",
-      decimals: 18,
+      decimals: 6,
       priceFeed: "0xA45A41be2D8419B60A6CE2Bc393A0B086b8B3bda",
       priceDecimals: 8,
       isStrictStable: true,

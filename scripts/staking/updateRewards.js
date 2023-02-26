@@ -51,7 +51,7 @@ async function getBscValues() {
     {
       name: "feeGlpTracker",
       address: "0x5E1e7da3A3eD2C77b9b8B70A2FB63dF980806Dc8",
-      transferAmount: "1.7"
+      transferAmount: "0.2174"
     }
   ]
 
@@ -83,12 +83,12 @@ async function main() {
     const rewardDistributorAddress = await rewardTracker.distributor()
     const rewardDistributor = await contractAt("RewardDistributor", rewardDistributorAddress)
     const convertedTransferAmount = ethers.utils.parseUnits(transferAmount, tokenDecimals)
-    const rewardsPerInterval = convertedTransferAmount.div(35 * 24 * 60 * 60)
+    const rewardsPerInterval = convertedTransferAmount.div(14 * 24 * 60 * 60)
     console.log("rewardDistributorAddress", rewardDistributorAddress)
     console.log("convertedTransferAmount", convertedTransferAmount.toString())
     console.log("rewardsPerInterval", rewardsPerInterval.toString())
 
-    // await sendTxn(rewardToken.transfer(rewardDistributorAddress, convertedTransferAmount, { gasLimit: 500000 }), `rewardToken.transfer ${i}`)
+    await sendTxn(rewardToken.transfer(rewardDistributorAddress, convertedTransferAmount, { gasLimit: 500000 }), `rewardToken.transfer ${i}`)
     await updateTokensPerInterval(rewardDistributor, rewardsPerInterval, "rewardDistributor")
   }
 }
