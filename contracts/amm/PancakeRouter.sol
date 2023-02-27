@@ -6,7 +6,7 @@ import "../tokens/Token.sol";
 import "../libraries/token/IERC20.sol";
 import "./interfaces/IPancakeRouter.sol";
 
-contract PancakeRouter is IPancakeRouter {
+abstract contract PancakeRouter is IPancakeRouter {
     address public pair;
 
     constructor(address _pair) public {
@@ -18,12 +18,20 @@ contract PancakeRouter is IPancakeRouter {
         address tokenB,
         uint256 amountADesired,
         uint256 amountBDesired,
-        uint256 /*amountAMin*/,
-        uint256 /*amountBMin*/,
+        uint256, /*amountAMin*/
+        uint256, /*amountBMin*/
         address to,
         uint256 deadline
-    ) external override returns (uint256 amountA, uint256 amountB, uint256 liquidity) {
-        require(deadline >= block.timestamp, 'PancakeRouter: EXPIRED');
+    )
+        external
+        override
+        returns (
+            uint256 amountA,
+            uint256 amountB,
+            uint256 liquidity
+        )
+    {
+        require(deadline >= block.timestamp, "PancakeRouter: EXPIRED");
 
         Token(pair).mint(to, 1000);
 

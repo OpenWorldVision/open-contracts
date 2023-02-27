@@ -43,7 +43,7 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
     address public openVester;
     address public oapVester;
 
-    mapping (address => address) public pendingReceivers;
+    mapping(address => address) public pendingReceivers;
 
     event StakeOpen(address account, address token, uint256 amount);
     event UnstakeOpen(address account, address token, uint256 amount);
@@ -95,18 +95,29 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
     }
 
     // to help users who accidentally send their tokens to this contract
-    function withdrawToken(address _token, address _account, uint256 _amount) external onlyGov {
+    function withdrawToken(
+        address _token,
+        address _account,
+        uint256 _amount
+    ) external onlyGov {
         IERC20(_token).safeTransfer(_account, _amount);
     }
 
-    function batchStakeOpenForAccount(address[] memory _accounts, uint256[] memory _amounts) external nonReentrant onlyGov {
+    function batchStakeOpenForAccount(
+        address[] memory _accounts,
+        uint256[] memory _amounts
+    ) external nonReentrant onlyGov {
         address _open = open;
         for (uint256 i = 0; i < _accounts.length; i++) {
             _stakeOpen(msg.sender, _accounts[i], _open, _amounts[i]);
         }
     }
 
-    function stakeOpenForAccount(address _account, uint256 _amount) external nonReentrant onlyGov {
+    function stakeOpenForAccount(address _account, uint256 _amount)
+        external
+        nonReentrant
+        onlyGov
+    {
         _stakeOpen(msg.sender, _account, open, _amount);
     }
 
@@ -126,56 +137,177 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
         _unstakeOpen(msg.sender, esOpen, _amount, true);
     }
 
-    function mintAndStakeOap(address _token, uint256 _amount, uint256 _minUsdg, uint256 _minOap) external nonReentrant returns (uint256) {
+    function mintAndStakeOapForAccount(
+        address _token,
+        uint256 _amount,
+        uint256 _minUsdg,
+        uint256 _minOap,
+        address _account
+    ) external nonReentrant returns (uint256) {
         require(_amount > 0, "RewardRouter: invalid _amount");
 
-        address account = msg.sender;
-        uint256 oapAmount = IGlpManager(oapManager).addLiquidityForAccount(account, account, _token, _amount, _minUsdg, _minOap);
-        IRewardTracker(feeOapTracker).stakeForAccount(account, account, oap, oapAmount);
-        IRewardTracker(stakedOapTracker).stakeForAccount(account, account, feeOapTracker, oapAmount);
+        address account = _account;
+        uint256 oapAmount = IGlpManager(oapManager).addLiquidityForAccount(
+            account,
+            account,
+            _token,
+            _amount,
+            _minUsdg,
+            _minOap
+        );
+        IRewardTracker(feeOapTracker).stakeForAccount(
+            account,
+            account,
+            oap,
+            oapAmount
+        );
+        IRewardTracker(stakedOapTracker).stakeForAccount(
+            account,
+            account,
+            feeOapTracker,
+            oapAmount
+        );
 
         emit StakeOap(account, oapAmount);
 
         return oapAmount;
     }
 
-    function mintAndStakeOapETH(uint256 _minUsdo, uint256 _minOap) external payable nonReentrant returns (uint256) {
+    function mintAndStakeOap(
+        address _token,
+        uint256 _amount,
+        uint256 _minUsdg,
+        uint256 _minOap
+    ) external nonReentrant returns (uint256) {
+        require(_amount > 0, "RewardRouter: invalid _amount");
+
+        address account = msg.sender;
+        uint256 oapAmount = IGlpManager(oapManager).addLiquidityForAccount(
+            account,
+            account,
+            _token,
+            _amount,
+            _minUsdg,
+            _minOap
+        );
+        IRewardTracker(feeOapTracker).stakeForAccount(
+            account,
+            account,
+            oap,
+            oapAmount
+        );
+        IRewardTracker(stakedOapTracker).stakeForAccount(
+            account,
+            account,
+            feeOapTracker,
+            oapAmount
+        );
+
+        emit StakeOap(account, oapAmount);
+
+        return oapAmount;
+    }
+
+    function mintAndStakeOapETH(uint256 _minUsdo, uint256 _minOap)
+        external
+        payable
+        nonReentrant
+        returns (uint256)
+    {
         require(msg.value > 0, "RewardRouter: invalid msg.value");
 
         IWETH(weth).deposit{value: msg.value}();
         IERC20(weth).approve(oapManager, msg.value);
 
         address account = msg.sender;
-        uint256 oapAmount = IGlpManager(oapManager).addLiquidityForAccount(address(this), account, weth, msg.value, _minUsdo, _minOap);
+        uint256 oapAmount = IGlpManager(oapManager).addLiquidityForAccount(
+            address(this),
+            account,
+            weth,
+            msg.value,
+            _minUsdo,
+            _minOap
+        );
 
-        IRewardTracker(feeOapTracker).stakeForAccount(account, account, oap, oapAmount);
-        IRewardTracker(stakedOapTracker).stakeForAccount(account, account, feeOapTracker, oapAmount);
+        IRewardTracker(feeOapTracker).stakeForAccount(
+            account,
+            account,
+            oap,
+            oapAmount
+        );
+        IRewardTracker(stakedOapTracker).stakeForAccount(
+            account,
+            account,
+            feeOapTracker,
+            oapAmount
+        );
 
         emit StakeOap(account, oapAmount);
 
         return oapAmount;
     }
 
-    function unstakeAndRedeemOap(address _tokenOut, uint256 _oapAmount, uint256 _minOut, address _receiver) external nonReentrant returns (uint256) {
+    function unstakeAndRedeemOap(
+        address _tokenOut,
+        uint256 _oapAmount,
+        uint256 _minOut,
+        address _receiver
+    ) external nonReentrant returns (uint256) {
         require(_oapAmount > 0, "RewardRouter: invalid _oapAmount");
 
         address account = msg.sender;
-        IRewardTracker(stakedOapTracker).unstakeForAccount(account, feeOapTracker, _oapAmount, account);
-        IRewardTracker(feeOapTracker).unstakeForAccount(account, oap, _oapAmount, account);
-        uint256 amountOut = IGlpManager(oapManager).removeLiquidityForAccount(account, _tokenOut, _oapAmount, _minOut, _receiver);
+        IRewardTracker(stakedOapTracker).unstakeForAccount(
+            account,
+            feeOapTracker,
+            _oapAmount,
+            account
+        );
+        IRewardTracker(feeOapTracker).unstakeForAccount(
+            account,
+            oap,
+            _oapAmount,
+            account
+        );
+        uint256 amountOut = IGlpManager(oapManager).removeLiquidityForAccount(
+            account,
+            _tokenOut,
+            _oapAmount,
+            _minOut,
+            _receiver
+        );
 
         emit UnstakeOap(account, _oapAmount);
 
         return amountOut;
     }
 
-    function unstakeAndRedeemOapETH(uint256 _oapAmount, uint256 _minOut, address payable _receiver) external nonReentrant returns (uint256) {
+    function unstakeAndRedeemOapETH(
+        uint256 _oapAmount,
+        uint256 _minOut,
+        address payable _receiver
+    ) external nonReentrant returns (uint256) {
         require(_oapAmount > 0, "RewardRouter: invalid _oapAmount");
 
         address account = msg.sender;
-        IRewardTracker(stakedOapTracker).unstakeForAccount(account, feeOapTracker, _oapAmount, account);
-        IRewardTracker(feeOapTracker).unstakeForAccount(account, oap, _oapAmount, account);
-        uint256 amountOut = IGlpManager(oapManager).removeLiquidityForAccount(account, weth, _oapAmount, _minOut, address(this));
+        IRewardTracker(stakedOapTracker).unstakeForAccount(
+            account,
+            feeOapTracker,
+            _oapAmount,
+            account
+        );
+        IRewardTracker(feeOapTracker).unstakeForAccount(
+            account,
+            oap,
+            _oapAmount,
+            account
+        );
+        uint256 amountOut = IGlpManager(oapManager).removeLiquidityForAccount(
+            account,
+            weth,
+            _oapAmount,
+            _minOut,
+            address(this)
+        );
 
         IWETH(weth).withdraw(amountOut);
 
@@ -214,7 +346,11 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
         _compound(msg.sender);
     }
 
-    function compoundForAccount(address _account) external nonReentrant onlyGov {
+    function compoundForAccount(address _account)
+        external
+        nonReentrant
+        onlyGov
+    {
         _compound(_account);
     }
 
@@ -231,7 +367,10 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
         if (_shouldClaimWeth) {
             if (_shouldConvertWethToEth) {
                 // uint256 weth0 = IRewardTracker(feeOpenTracker).claimForAccount(account, address(this));
-                uint256 weth1 = IRewardTracker(feeOapTracker).claimForAccount(account, address(this));
+                uint256 weth1 = IRewardTracker(feeOapTracker).claimForAccount(
+                    account,
+                    address(this)
+                );
 
                 uint256 wethAmount = weth1;
                 IWETH(weth).withdraw(wethAmount);
@@ -244,47 +383,83 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
         }
     }
 
-    function batchCompoundForAccounts(address[] memory _accounts) external nonReentrant onlyGov {
+    function batchCompoundForAccounts(address[] memory _accounts)
+        external
+        nonReentrant
+        onlyGov
+    {
         for (uint256 i = 0; i < _accounts.length; i++) {
             _compound(_accounts[i]);
         }
     }
 
     function signalTransfer(address _receiver) external nonReentrant {
-        require(IERC20(openVester).balanceOf(msg.sender) == 0, "RewardRouter: sender has vested tokens");
-        require(IERC20(oapVester).balanceOf(msg.sender) == 0, "RewardRouter: sender has vested tokens");
+        require(
+            IERC20(openVester).balanceOf(msg.sender) == 0,
+            "RewardRouter: sender has vested tokens"
+        );
+        require(
+            IERC20(oapVester).balanceOf(msg.sender) == 0,
+            "RewardRouter: sender has vested tokens"
+        );
 
         _validateReceiver(_receiver);
         pendingReceivers[msg.sender] = _receiver;
     }
 
     function acceptTransfer(address _sender) external nonReentrant {
-        require(IERC20(openVester).balanceOf(_sender) == 0, "RewardRouter: sender has vested tokens");
-        require(IERC20(oapVester).balanceOf(_sender) == 0, "RewardRouter: sender has vested tokens");
+        require(
+            IERC20(openVester).balanceOf(_sender) == 0,
+            "RewardRouter: sender has vested tokens"
+        );
+        require(
+            IERC20(oapVester).balanceOf(_sender) == 0,
+            "RewardRouter: sender has vested tokens"
+        );
 
         address receiver = msg.sender;
-        require(pendingReceivers[_sender] == receiver, "RewardRouter: transfer not signalled");
+        require(
+            pendingReceivers[_sender] == receiver,
+            "RewardRouter: transfer not signalled"
+        );
         delete pendingReceivers[_sender];
 
         _validateReceiver(receiver);
         _compound(_sender);
 
-        uint256 stakedOpen = IRewardTracker(stakedOpenTracker).depositBalances(_sender, open);
+        uint256 stakedOpen = IRewardTracker(stakedOpenTracker).depositBalances(
+            _sender,
+            open
+        );
         if (stakedOpen > 0) {
             _unstakeOpen(_sender, open, stakedOpen, false);
             _stakeOpen(_sender, receiver, open, stakedOpen);
         }
 
-        uint256 stakedEsOpen = IRewardTracker(stakedOpenTracker).depositBalances(_sender, esOpen);
+        uint256 stakedEsOpen = IRewardTracker(stakedOpenTracker)
+            .depositBalances(_sender, esOpen);
         if (stakedEsOpen > 0) {
             _unstakeOpen(_sender, esOpen, stakedEsOpen, false);
             _stakeOpen(_sender, receiver, esOpen, stakedEsOpen);
         }
 
-        uint256 stakedBnOpen = IRewardTracker(feeOpenTracker).depositBalances(_sender, bnOpen);
+        uint256 stakedBnOpen = IRewardTracker(feeOpenTracker).depositBalances(
+            _sender,
+            bnOpen
+        );
         if (stakedBnOpen > 0) {
-            IRewardTracker(feeOpenTracker).unstakeForAccount(_sender, bnOpen, stakedBnOpen, _sender);
-            IRewardTracker(feeOpenTracker).stakeForAccount(_sender, receiver, bnOpen, stakedBnOpen);
+            IRewardTracker(feeOpenTracker).unstakeForAccount(
+                _sender,
+                bnOpen,
+                stakedBnOpen,
+                _sender
+            );
+            IRewardTracker(feeOpenTracker).stakeForAccount(
+                _sender,
+                receiver,
+                bnOpen,
+                stakedBnOpen
+            );
         }
 
         uint256 esOpenBalance = IERC20(esOpen).balanceOf(_sender);
@@ -292,13 +467,36 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
             IERC20(esOpen).transferFrom(_sender, receiver, esOpenBalance);
         }
 
-        uint256 oapAmount = IRewardTracker(feeOapTracker).depositBalances(_sender, oap);
+        uint256 oapAmount = IRewardTracker(feeOapTracker).depositBalances(
+            _sender,
+            oap
+        );
         if (oapAmount > 0) {
-            IRewardTracker(stakedOapTracker).unstakeForAccount(_sender, feeOapTracker, oapAmount, _sender);
-            IRewardTracker(feeOapTracker).unstakeForAccount(_sender, oap, oapAmount, _sender);
+            IRewardTracker(stakedOapTracker).unstakeForAccount(
+                _sender,
+                feeOapTracker,
+                oapAmount,
+                _sender
+            );
+            IRewardTracker(feeOapTracker).unstakeForAccount(
+                _sender,
+                oap,
+                oapAmount,
+                _sender
+            );
 
-            IRewardTracker(feeOapTracker).stakeForAccount(_sender, receiver, oap, oapAmount);
-            IRewardTracker(stakedOapTracker).stakeForAccount(receiver, receiver, feeOapTracker, oapAmount);
+            IRewardTracker(feeOapTracker).stakeForAccount(
+                _sender,
+                receiver,
+                oap,
+                oapAmount
+            );
+            IRewardTracker(stakedOapTracker).stakeForAccount(
+                receiver,
+                receiver,
+                feeOapTracker,
+                oapAmount
+            );
         }
 
         IVester(openVester).transferStakeValues(_sender, receiver);
@@ -306,29 +504,80 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
     }
 
     function _validateReceiver(address _receiver) private view {
-        require(IRewardTracker(stakedOpenTracker).averageStakedAmounts(_receiver) == 0, "RewardRouter: stakedOpenTracker.averageStakedAmounts > 0");
-        require(IRewardTracker(stakedOpenTracker).cumulativeRewards(_receiver) == 0, "RewardRouter: stakedOpenTracker.cumulativeRewards > 0");
+        require(
+            IRewardTracker(stakedOpenTracker).averageStakedAmounts(_receiver) ==
+                0,
+            "RewardRouter: stakedOpenTracker.averageStakedAmounts > 0"
+        );
+        require(
+            IRewardTracker(stakedOpenTracker).cumulativeRewards(_receiver) == 0,
+            "RewardRouter: stakedOpenTracker.cumulativeRewards > 0"
+        );
 
-        require(IRewardTracker(bonusOpenTracker).averageStakedAmounts(_receiver) == 0, "RewardRouter: bonusOpenTracker.averageStakedAmounts > 0");
-        require(IRewardTracker(bonusOpenTracker).cumulativeRewards(_receiver) == 0, "RewardRouter: bonusOpenTracker.cumulativeRewards > 0");
+        require(
+            IRewardTracker(bonusOpenTracker).averageStakedAmounts(_receiver) ==
+                0,
+            "RewardRouter: bonusOpenTracker.averageStakedAmounts > 0"
+        );
+        require(
+            IRewardTracker(bonusOpenTracker).cumulativeRewards(_receiver) == 0,
+            "RewardRouter: bonusOpenTracker.cumulativeRewards > 0"
+        );
 
-        require(IRewardTracker(feeOpenTracker).averageStakedAmounts(_receiver) == 0, "RewardRouter: feeOpenTracker.averageStakedAmounts > 0");
-        require(IRewardTracker(feeOpenTracker).cumulativeRewards(_receiver) == 0, "RewardRouter: feeOpenTracker.cumulativeRewards > 0");
+        require(
+            IRewardTracker(feeOpenTracker).averageStakedAmounts(_receiver) == 0,
+            "RewardRouter: feeOpenTracker.averageStakedAmounts > 0"
+        );
+        require(
+            IRewardTracker(feeOpenTracker).cumulativeRewards(_receiver) == 0,
+            "RewardRouter: feeOpenTracker.cumulativeRewards > 0"
+        );
 
-        require(IVester(openVester).transferredAverageStakedAmounts(_receiver) == 0, "RewardRouter: openVester.transferredAverageStakedAmounts > 0");
-        require(IVester(openVester).transferredCumulativeRewards(_receiver) == 0, "RewardRouter: openVester.transferredCumulativeRewards > 0");
+        require(
+            IVester(openVester).transferredAverageStakedAmounts(_receiver) == 0,
+            "RewardRouter: openVester.transferredAverageStakedAmounts > 0"
+        );
+        require(
+            IVester(openVester).transferredCumulativeRewards(_receiver) == 0,
+            "RewardRouter: openVester.transferredCumulativeRewards > 0"
+        );
 
-        require(IRewardTracker(stakedOapTracker).averageStakedAmounts(_receiver) == 0, "RewardRouter: stakedOapTracker.averageStakedAmounts > 0");
-        require(IRewardTracker(stakedOapTracker).cumulativeRewards(_receiver) == 0, "RewardRouter: stakedOapTracker.cumulativeRewards > 0");
+        require(
+            IRewardTracker(stakedOapTracker).averageStakedAmounts(_receiver) ==
+                0,
+            "RewardRouter: stakedOapTracker.averageStakedAmounts > 0"
+        );
+        require(
+            IRewardTracker(stakedOapTracker).cumulativeRewards(_receiver) == 0,
+            "RewardRouter: stakedOapTracker.cumulativeRewards > 0"
+        );
 
-        require(IRewardTracker(feeOapTracker).averageStakedAmounts(_receiver) == 0, "RewardRouter: feeOapTracker.averageStakedAmounts > 0");
-        require(IRewardTracker(feeOapTracker).cumulativeRewards(_receiver) == 0, "RewardRouter: feeOapTracker.cumulativeRewards > 0");
+        require(
+            IRewardTracker(feeOapTracker).averageStakedAmounts(_receiver) == 0,
+            "RewardRouter: feeOapTracker.averageStakedAmounts > 0"
+        );
+        require(
+            IRewardTracker(feeOapTracker).cumulativeRewards(_receiver) == 0,
+            "RewardRouter: feeOapTracker.cumulativeRewards > 0"
+        );
 
-        require(IVester(oapVester).transferredAverageStakedAmounts(_receiver) == 0, "RewardRouter: openVester.transferredAverageStakedAmounts > 0");
-        require(IVester(oapVester).transferredCumulativeRewards(_receiver) == 0, "RewardRouter: openVester.transferredCumulativeRewards > 0");
+        require(
+            IVester(oapVester).transferredAverageStakedAmounts(_receiver) == 0,
+            "RewardRouter: openVester.transferredAverageStakedAmounts > 0"
+        );
+        require(
+            IVester(oapVester).transferredCumulativeRewards(_receiver) == 0,
+            "RewardRouter: openVester.transferredCumulativeRewards > 0"
+        );
 
-        require(IERC20(openVester).balanceOf(_receiver) == 0, "RewardRouter: openVester.balance > 0");
-        require(IERC20(oapVester).balanceOf(_receiver) == 0, "RewardRouter: oapVester.balance > 0");
+        require(
+            IERC20(openVester).balanceOf(_receiver) == 0,
+            "RewardRouter: openVester.balance > 0"
+        );
+        require(
+            IERC20(oapVester).balanceOf(_receiver) == 0,
+            "RewardRouter: oapVester.balance > 0"
+        );
     }
 
     function _compound(address _account) private {
@@ -337,53 +586,121 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
     }
 
     function _compoundOpen(address _account) private {
-        uint256 esOpenAmount = IRewardTracker(stakedOpenTracker).claimForAccount(_account, _account);
+        uint256 esOpenAmount = IRewardTracker(stakedOpenTracker)
+            .claimForAccount(_account, _account);
         if (esOpenAmount > 0) {
             _stakeOpen(_account, _account, esOpen, esOpenAmount);
         }
 
-        uint256 bnOpenAmount = IRewardTracker(bonusOpenTracker).claimForAccount(_account, _account);
+        uint256 bnOpenAmount = IRewardTracker(bonusOpenTracker).claimForAccount(
+            _account,
+            _account
+        );
         if (bnOpenAmount > 0) {
-            IRewardTracker(feeOpenTracker).stakeForAccount(_account, _account, bnOpen, bnOpenAmount);
+            IRewardTracker(feeOpenTracker).stakeForAccount(
+                _account,
+                _account,
+                bnOpen,
+                bnOpenAmount
+            );
         }
     }
 
     function _compoundOap(address _account) private {
-        uint256 esOpenAmount = IRewardTracker(stakedOapTracker).claimForAccount(_account, _account);
+        uint256 esOpenAmount = IRewardTracker(stakedOapTracker).claimForAccount(
+            _account,
+            _account
+        );
         if (esOpenAmount > 0) {
             _stakeOpen(_account, _account, esOpen, esOpenAmount);
         }
     }
 
-    function _stakeOpen(address _fundingAccount, address _account, address _token, uint256 _amount) private {
+    function _stakeOpen(
+        address _fundingAccount,
+        address _account,
+        address _token,
+        uint256 _amount
+    ) private {
         require(_amount > 0, "RewardRouter: invalid _amount");
 
-        IRewardTracker(stakedOpenTracker).stakeForAccount(_fundingAccount, _account, _token, _amount);
-        IRewardTracker(bonusOpenTracker).stakeForAccount(_account, _account, stakedOpenTracker, _amount);
-        IRewardTracker(feeOpenTracker).stakeForAccount(_account, _account, bonusOpenTracker, _amount);
+        IRewardTracker(stakedOpenTracker).stakeForAccount(
+            _fundingAccount,
+            _account,
+            _token,
+            _amount
+        );
+        IRewardTracker(bonusOpenTracker).stakeForAccount(
+            _account,
+            _account,
+            stakedOpenTracker,
+            _amount
+        );
+        IRewardTracker(feeOpenTracker).stakeForAccount(
+            _account,
+            _account,
+            bonusOpenTracker,
+            _amount
+        );
 
         emit StakeOpen(_account, _token, _amount);
     }
 
-    function _unstakeOpen(address _account, address _token, uint256 _amount, bool _shouldReduceBnOpen) private {
+    function _unstakeOpen(
+        address _account,
+        address _token,
+        uint256 _amount,
+        bool _shouldReduceBnOpen
+    ) private {
         require(_amount > 0, "RewardRouter: invalid _amount");
 
-        uint256 balance = IRewardTracker(stakedOpenTracker).stakedAmounts(_account);
+        uint256 balance = IRewardTracker(stakedOpenTracker).stakedAmounts(
+            _account
+        );
 
-        IRewardTracker(feeOpenTracker).unstakeForAccount(_account, bonusOpenTracker, _amount, _account);
-        IRewardTracker(bonusOpenTracker).unstakeForAccount(_account, stakedOpenTracker, _amount, _account);
-        IRewardTracker(stakedOpenTracker).unstakeForAccount(_account, _token, _amount, _account);
+        IRewardTracker(feeOpenTracker).unstakeForAccount(
+            _account,
+            bonusOpenTracker,
+            _amount,
+            _account
+        );
+        IRewardTracker(bonusOpenTracker).unstakeForAccount(
+            _account,
+            stakedOpenTracker,
+            _amount,
+            _account
+        );
+        IRewardTracker(stakedOpenTracker).unstakeForAccount(
+            _account,
+            _token,
+            _amount,
+            _account
+        );
 
         if (_shouldReduceBnOpen) {
-            uint256 bnOpenAmount = IRewardTracker(bonusOpenTracker).claimForAccount(_account, _account);
+            uint256 bnOpenAmount = IRewardTracker(bonusOpenTracker)
+                .claimForAccount(_account, _account);
             if (bnOpenAmount > 0) {
-                IRewardTracker(feeOpenTracker).stakeForAccount(_account, _account, bnOpen, bnOpenAmount);
+                IRewardTracker(feeOpenTracker).stakeForAccount(
+                    _account,
+                    _account,
+                    bnOpen,
+                    bnOpenAmount
+                );
             }
 
-            uint256 stakedBnOpen = IRewardTracker(feeOpenTracker).depositBalances(_account, bnOpen);
+            uint256 stakedBnOpen = IRewardTracker(feeOpenTracker)
+                .depositBalances(_account, bnOpen);
             if (stakedBnOpen > 0) {
-                uint256 reductionAmount = stakedBnOpen.mul(_amount).div(balance);
-                IRewardTracker(feeOpenTracker).unstakeForAccount(_account, bnOpen, reductionAmount, _account);
+                uint256 reductionAmount = stakedBnOpen.mul(_amount).div(
+                    balance
+                );
+                IRewardTracker(feeOpenTracker).unstakeForAccount(
+                    _account,
+                    bnOpen,
+                    reductionAmount,
+                    _account
+                );
                 IMintable(bnOpen).burn(_account, reductionAmount);
             }
         }
