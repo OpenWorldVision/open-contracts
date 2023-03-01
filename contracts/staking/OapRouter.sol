@@ -6,17 +6,36 @@ import "../libraries/token/IERC20.sol";
 import "../staking/RewardRouterV2.sol";
 import "../libraries/math/SafeMath.sol";
 import "../libraries/access/Ownable.sol";
+import "../libraries/utils/ReentrancyGuard.sol";
+import "../tokens/interfaces/IWETH.sol";
 
-contract OapRouter is Ownable {
+contract OapRouter is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     address public pancakeRouter;
     address public rewardRouter;
+    address public weth;
 
     mapping(address => bool) public whitelistTokenOut;
 
-    constructor(address _pancakeRouter, address _rewardRouter) public {
+    constructor(
+        address _pancakeRouter,
+        address _rewardRouter,
+        address _weth
+    ) public {
         pancakeRouter = _pancakeRouter;
         rewardRouter = _rewardRouter;
+        weth = _weth;
+    }
+
+    function swapAndStakeETH(
+        address tokenOut,
+        uint256 amountOutMin,
+        uint256 minUsdo,
+        uint256 minOap
+    ) external payable nonReentrant {
+        require(msg.value > 0, "OapRouter: invalid msg.value");
+        IWETH(weth).deposit{value: msg.value}();
+        swapAndStake(weth, tokenOut, msg.value, amountOutMin, minUsdo, minOap);
     }
 
     function swapAndStake(
@@ -26,7 +45,7 @@ contract OapRouter is Ownable {
         uint256 amountOutMin,
         uint256 minUsdo,
         uint256 minOap
-    ) public {
+    ) public nonReentrant {
         require(
             IERC20(tokenIn).balanceOf(msg.sender) >= amountIn,
             "OapRouter: balance exceed"
