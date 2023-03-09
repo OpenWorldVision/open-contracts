@@ -165,7 +165,7 @@ module.exports = {
     },
     nativeToken: {
       name: "bnb",
-      address: "0x612777Eea37a44F7a95E3B101C39e1E2695fa6C2",
+      address: "0xae13d989dac2f0debff460ac112a837c89baa7cd",
       decimals: 18,
       priceFeed: "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526",
       priceDecimals: 8,

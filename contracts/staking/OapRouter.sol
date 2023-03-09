@@ -51,7 +51,8 @@ contract OapRouter is Ownable, ReentrancyGuard {
             "OapRouter: balance exceed"
         );
         require(whitelistTokenOut[tokenOut], "OapRouter: Not whitelist token");
-
+        IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn);
+        IERC20(tokenIn).approve(pancakeRouter, amountIn);
         uint256 _beforeBalance = IERC20(tokenOut).balanceOf(msg.sender);
 
         address[] memory path = new address[](2);
