@@ -35,7 +35,38 @@ contract OapRouter is Ownable, ReentrancyGuard {
     ) external payable nonReentrant {
         require(msg.value > 0, "OapRouter: invalid msg.value");
         IWETH(weth).deposit{value: msg.value}();
-        swapAndStake(weth, tokenOut, msg.value, amountOutMin, minUsdo, minOap);
+        address tokenIn = weth;
+        uint256 amountIn = msg.value;
+        require(
+            IERC20(tokenIn).balanceOf(msg.sender) >= amountIn,
+            "OapRouter: balance exceed"
+        );
+        require(whitelistTokenOut[tokenOut], "OapRouter: Not whitelist token");
+        IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn);
+        IERC20(tokenIn).approve(pancakeRouter, amountIn);
+        uint256 _beforeBalance = IERC20(tokenOut).balanceOf(msg.sender);
+
+        address[] memory path = new address[](2);
+        path[0] = tokenIn;
+        path[1] = tokenOut;
+
+        IPancakeRouter(pancakeRouter).swapExactTokensForTokens(
+            amountIn,
+            amountOutMin,
+            path,
+            msg.sender,
+            block.timestamp + 120
+        );
+
+        uint256 _afterBalance = IERC20(tokenOut).balanceOf(msg.sender);
+
+        RewardRouterV2(payable(rewardRouter)).mintAndStakeOapForAccount(
+            tokenOut,
+            _afterBalance.sub(_beforeBalance),
+            minUsdo,
+            minOap,
+            msg.sender
+        );
     }
 
     function swapAndStake(
@@ -86,10 +117,10 @@ contract OapRouter is Ownable, ReentrancyGuard {
         rewardRouter = _router;
     }
 
-    function setWhitelistToken(address _token, bool _isWhitelist)
-        public
-        onlyOwner
-    {
+    function setWhitelistToken(
+        address _token,
+        bool _isWhitelist
+    ) public onlyOwner {
         whitelistTokenOut[_token] = _isWhitelist;
     }
 }
