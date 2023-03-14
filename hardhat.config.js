@@ -2,6 +2,7 @@ require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require("hardhat-contract-sizer");
 require("@typechain/hardhat");
+require("@openzeppelin/hardhat-upgrades");
 
 const {
   BSC_URL,
