@@ -10,11 +10,11 @@ async function main() {
   const { nativeToken } = tokens;
 
   const vault = await deployContract("Vault", []);
-  // const vault = await contractAt("Vault", "0x547a29352421e7273eA18Acce5fb8aa308290523")
-  // In bsc, we use multisig for gov address at initial
+
+  // In bsc, arbitrum we use multisig for gov address at initial
   const gov = {
     address:
-      network === "bsc" ? "0x2B0Ae181FE6C13Bd40Acd3dC9ce5B0C323a9d8Ae" : network ==="harmony" ? "0x5678917FfEb77827Aafc33419E99DaCd707313a9" : "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517",
+      network === "bsc" ? "0x2B0Ae181FE6C13Bd40Acd3dC9ce5B0C323a9d8Ae" : network ==="arbitrum" ? "0x07f3E5DA3f9AaA2ba21b0c2177CD0AE5457CDCaB" : "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517",
   };
   const shortsTracker = await deployContract(
     "ShortsTracker",
@@ -95,9 +95,9 @@ async function main() {
   await sendTxn(
     vault.setFees(
       10, // _taxBasisPoints
-      5, // _stableTaxBasisPoints
-      20, // _mintBurnFeeBasisPoints
-      20, // _swapFeeBasisPoints
+      20, // _stableTaxBasisPoints
+      5, // _mintBurnFeeBasisPoints
+      160, // _swapFeeBasisPoints
       1, // _stableSwapFeeBasisPoints
       10, // _marginFeeBasisPoints
       toUsd(2), // _liquidationFeeUsd
