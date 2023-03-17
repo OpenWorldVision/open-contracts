@@ -57,7 +57,7 @@ async function main() {
     "olp.setInPrivateTransferMode"
   );
 
-  const glpManager = await deployContract("GlpManager", [
+  const glpManager = await deployContract("OapManager", [
     vault.address,
     usdg.address,
     olp.address,
