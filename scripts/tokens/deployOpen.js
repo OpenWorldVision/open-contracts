@@ -1,12 +1,14 @@
 const { deployContract, sendTxn, writeTmpAddresses, callWithRetries } = require("../shared/helpers")
 
-const {upgrades, ethers} = require("hardhat")
+const {upgrades, ethers, network} = require("hardhat")
 
 
 async function main() {
+  const [owner] = await ethers.getSigners();
+  console.log("Account: ", owner.address)
   const addresses = {}
   const OPEN =  await ethers.getContractFactory("OPEN")
-  const contract = await upgrades.deployProxy(OPEN, ["0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517"])
+  const contract = await upgrades.deployProxy(OPEN, ["0x5678917FfEb77827Aafc33419E99DaCd707313a9"])
   await contract.deployed();
   console.log("OPEN deployed to:", contract.address);
 }
