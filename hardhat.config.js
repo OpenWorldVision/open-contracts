@@ -2,6 +2,7 @@ require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require("hardhat-contract-sizer");
 require("@typechain/hardhat");
+require("@openzeppelin/hardhat-upgrades");
 
 const {
   BSC_URL,
@@ -204,7 +205,7 @@ module.exports = {
     },
     arbitrum: {
       url: ARBITRUM_URL,
-      gasPrice: 30000000000,
+      // gasPrice: 30000000000,
       chainId: 42161,
       accounts: [ARBITRUM_DEPLOY_KEY],
     },

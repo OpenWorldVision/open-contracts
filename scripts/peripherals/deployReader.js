@@ -10,9 +10,9 @@ const network = process.env.HARDHAT_NETWORK || "mainnet";
 async function main() {
   const reader = await deployContract("Reader", [], "Reader");
 
-  if (network === "avax" || network === "testnet" || network === "bsc" || network === "harmony") {
+  // if (network === "avax" || network === "testnet" || network === "bsc" || ) {
     await sendTxn(reader.setConfig(true), "Reader.setConfig");
-  }
+  // }
 
   writeTmpAddresses({
     reader: reader.address,

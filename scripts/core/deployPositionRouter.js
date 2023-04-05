@@ -120,18 +120,18 @@ async function getTestnetValues(signer) {
 async function getArbValues(signer) {
   const vault = await contractAt(
     "Vault",
-    "0x489ee077994B6658eAfA855C308275EAd8097C4A"
+    "0xec45801399EB38B75A3bf793051b00bb64fF3eF8"
   );
   const timelock = await contractAt("Timelock", await vault.gov(), signer);
   const router = await contractAt("Router", await vault.router(), signer);
   const weth = await contractAt("WETH", tokens.nativeToken.address);
   const referralStorage = await contractAt(
     "ReferralStorage",
-    "0xe6fab3F0c7199b0d34d7FbE83394fc0e0D06e99d"
+    "0xDE83088F2bcB974A349E6347Dc75919ecC0dD6f0"
   );
   const shortsTracker = await contractAt(
     "ShortsTracker",
-    "0xf58eEc83Ba28ddd79390B9e90C4d3EbfF1d434da",
+    "0x857c831fE590c472a222AbF62131906e5d038330",
     signer
   );
   const depositFee = "30"; // 0.3%

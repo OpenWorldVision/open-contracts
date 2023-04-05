@@ -24,10 +24,11 @@ async function main() {
     vault = "0x547a29352421e7273eA18Acce5fb8aa308290523";
     usdg = "0xB502B9C5d94d76d2623227Fb0c652d2734DeF7Cd";
   }
-  if (network === "harmony") {
-    router = "0x09d7A1BC8AE5A3398e715a0966f1eE0D809C00C0";
-    vault = "0x94ac069FA3672fe67b7A6e3f39EA47489864EFa4";
-    usdg = "0x2E4Bb0A60734aFD6A7a03dacE82247c1531f9ae5";
+
+  if(network === "arbitrum"){
+    router = "0xa52898528CC777590E034f3E9704749818B754b5";
+    vault = "0xec45801399EB38B75A3bf793051b00bb64fF3eF8";
+    usdg = "0x26E94fBf9480aA7836d93220296BD130771aF3DA";
   }
   // Arbitrum mainnet addresses
   await sendTxn(
