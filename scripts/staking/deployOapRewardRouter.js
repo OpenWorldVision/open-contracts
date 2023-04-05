@@ -10,6 +10,22 @@ const tokens = require("../core/tokens")[network];
 const { AddressZero } = ethers.constants
 
 function getValues() {
+  if (network === "arbitrum") {
+    return {
+      glpManagerAddress: {
+        address: "0xAD26336E8a65398Ed6A566175B132D48F9871004"
+      },
+      glpAddress : {
+        address: "0x6f07cc0f3b3f950fda18F44c8e78Ebc296d3EE18"
+      },
+      esGmx: {
+        address: "0xDca5Cb6dD4dADCCe7Da1D2f47b6133145bDfC743"
+      },
+      stakedGlpTracker: {
+        address: ""
+      }
+    }
+  }
   if (network === "bsc") {
     return {
       glpManagerAddress: {
@@ -68,7 +84,7 @@ async function main() {
   const vestingDuration = 365 * 24 * 60 * 60;
   const { glpAddress, glpManagerAddress, stakedGlpTracker: stakedGlpTrackerAddr, esGmx } = getValues()
   const glpManager = await contractAt(
-    "GlpManager",
+    "OapManager",
     glpManagerAddress.address
   );
   const glp = await contractAt(

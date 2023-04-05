@@ -6,15 +6,25 @@ const network = (process.env.HARDHAT_NETWORK || 'mainnet');
 const tokens = require('./tokens')[network];
 
 async function main() {
-  const vault = await contractAt("Vault", "0x94ac069FA3672fe67b7A6e3f39EA47489864EFa4")
-  const timelock = await contractAt("Timelock", "0x3084DECAeBf765AA916f98CF034610200b197158")
+  const vault = await contractAt("Vault", "0xec45801399EB38B75A3bf793051b00bb64fF3eF8")
+  const timelock = await contractAt("Timelock", "0xdD3493dEcAC2bD82391fd6fd2f3a6c983372a015")
 
-  const { one, btc, usdc, eth } = tokens
-  const tokenArr = [ btc, usdc]
+  const { btc, eth, usdt, usdc} = tokens
+  const tokenArr = [btc, usdt, eth, usdc]
 
   for (const token of tokenArr) {
-    await sendTxn(timelock.vaultSetTokenConfig(
-      vault.address,
+    console.log("----------------")
+    console.log(vault.address,
+      token.address, // _token
+      token.decimals, // _tokenDecimals
+      token.tokenWeight, // _tokenWeight
+      token.minProfitBps, // _minProfitBps
+      expandDecimals(token.maxUsdgAmount, 18), // _maxUsdoAmount
+      token.isStable, // _isStable
+      token.isShortable // _isShortable
+      )
+    await sendTxn(vault.setTokenConfig(
+      // vault.address,
       token.address, // _token
       token.decimals, // _tokenDecimals
       token.tokenWeight, // _tokenWeight

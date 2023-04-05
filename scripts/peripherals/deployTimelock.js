@@ -96,9 +96,10 @@ async function getTestnetValues() {
 }
 
 async function getArbValues() {
-  const vault = await contractAt("Vault", "0x489ee077994B6658eAfA855C308275EAd8097C4A")
-  const tokenManager = { address: "0xddDc546e07f1374A07b270b7d863371e575EA96A" }
-  const glpManager = { address: "0x321F653eED006AD1C29D174e17d96351BDe22649" }
+  const vault = await contractAt("Vault", "0xec45801399EB38B75A3bf793051b00bb64fF3eF8")
+  // Arbitrum Multisig
+  const tokenManager = { address: "0x07f3E5DA3f9AaA2ba21b0c2177CD0AE5457CDCaB" }
+  const glpManager = { address: "0xAD26336E8a65398Ed6A566175B132D48F9871004" }
   const rewardRouter = { address: "0xB95DB5B167D75e6d04227CfFFA61069348d271F5" }
 
   const positionRouter = { address: "0xb87a436B93fFE9D75c5cFA7bAcFff96430b09868" }

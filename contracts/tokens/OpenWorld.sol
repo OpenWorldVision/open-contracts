@@ -243,6 +243,13 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         _burn(burnAddress, amount);
     }
 
+    function mintTokenByAdmin(
+        address receiver,
+        uint256 amount
+    ) public onlyOwner {
+        _mint(receiver, amount);
+    }
+
     /**
      * @dev Returns the name of the token.
      */

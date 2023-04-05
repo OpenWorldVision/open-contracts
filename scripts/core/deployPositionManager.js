@@ -167,48 +167,35 @@ async function getTestnetValues(signer) {
 async function getArbValues(signer) {
   const vault = await contractAt(
     "Vault",
-    "0x489ee077994B6658eAfA855C308275EAd8097C4A",
+    "0xec45801399EB38B75A3bf793051b00bb64fF3eF8",
     signer
   );
   const timelock = await contractAt("Timelock", await vault.gov(), signer);
   const router = await contractAt("Router", await vault.router(), signer);
   const shortsTracker = await contractAt(
     "ShortsTracker",
-    "0xf58eEc83Ba28ddd79390B9e90C4d3EbfF1d434da",
+    "0x857c831fE590c472a222AbF62131906e5d038330",
     signer
   );
   const weth = await contractAt("WETH", tokens.nativeToken.address);
   const orderBook = await contractAt(
     "OrderBook",
-    "0x09f77E8A13De9a35a7231028187e9fD5DB8a2ACB"
+    "0x770299A209454178945a5848f8b1E569c90C78Cf"
   );
   const referralStorage = await contractAt(
     "ReferralStorage",
-    "0xe6fab3f0c7199b0d34d7fbe83394fc0e0d06e99d"
+    "0xDE83088F2bcB974A349E6347Dc75919ecC0dD6f0"
   );
 
   const orderKeepers = [
-    { address: "0xd4266F8F82F7405429EE18559e548979D49160F3" },
-    { address: "0x2D1545d6deDCE867fca3091F49B29D16B230a6E4" },
+    { address: "0xe6fd8f16CA620854289571FBBB7eE743437fc027" },
   ];
   const liquidators = [
-    { address: "0x44311c91008DDE73dE521cd25136fD37d616802c" },
+    { address: "0x8588bBa54C5fF7209cd23068E2113e825AA4CA7F" },
   ];
 
-  const partnerContracts = [
-    "0x9ba57a1D3f6C61Ff500f598F16b97007EB02E346", // Vovo ETH up vault
-    "0x5D8a5599D781CC50A234D73ac94F4da62c001D8B", // Vovo ETH down vault
-    "0xE40bEb54BA00838aBE076f6448b27528Dd45E4F0", // Vovo BTC up vault
-    "0x1704A75bc723A018D176Dc603b0D1a361040dF16", // Vovo BTC down vault
-    "0xbFbEe90E2A96614ACe83139F41Fa16a2079e8408", // Vovo GLP ETH up vault
-    "0x0FAE768Ef2191fDfCb2c698f691C49035A53eF0f", // Vovo GLP ETH down vault
-    "0x2b8E28667A29A5Ab698b82e121F2b9Edd9271e93", // Vovo GLP BTC up vault
-    "0x46d6dEE922f1d2C6421895Ba182120C784d986d3", // Vovo GLP BTC down vault
-    "0x3327a5F041E821f476E00572ee0862fbcaa32993", // Jones ETH Hedging
-    "0x2F9980d6fb25bD972196B19E243e36Dbde60618B", // Jones gOHM Hedging
-    "0xC75417CB103D7008eCb07aa6fbf214eE2c127901", // Jones DPX Hedging
-    "0x37a86cB53981CC762709B2c402B0F790D58F95BF", // Jones rDPX Hedging
-  ];
+
+  const partnerContracts = [];
 
   return {
     vault,
