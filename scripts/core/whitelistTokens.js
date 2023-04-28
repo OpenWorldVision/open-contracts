@@ -9,8 +9,8 @@ async function main() {
   const vault = await contractAt("Vault", "0xec45801399EB38B75A3bf793051b00bb64fF3eF8")
   const timelock = await contractAt("Timelock", "0xdD3493dEcAC2bD82391fd6fd2f3a6c983372a015")
 
-  const { btc, eth, usdt, usdc} = tokens
-  const tokenArr = [btc, usdt, eth, usdc]
+  const { btc, eth, usdt, usdc, arb} = tokens
+  const tokenArr = [arb]
 
   for (const token of tokenArr) {
     console.log("----------------")
