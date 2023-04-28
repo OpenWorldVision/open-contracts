@@ -131,7 +131,7 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         return super.decreaseAllowance(_spender, _subtractedValue);
     }
 
-    function burn(uint256 _value) public {
+    function burn(uint256 _value) public whenNotPaused {
         _burn(msg.sender, _value);
     }
 
