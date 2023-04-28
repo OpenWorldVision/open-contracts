@@ -128,7 +128,7 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
     function setUnstakingThreshold(
         uint256 _threshold
     ) public isOperator(msg.sender) {
-        require(_threshold != 0, "OpenStaking: invalid threshold");
+        require(_threshold <= 604800, "OpenStaking: max threshold is 7 days");
         unstakingThreshold = _threshold;
     }
 

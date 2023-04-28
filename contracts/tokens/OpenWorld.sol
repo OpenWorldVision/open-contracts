@@ -186,6 +186,7 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
     }
 
     function setSellFeeRate(uint256 _sellFeeRate) public onlyOwner {
+        require(_sellFeeRate <= 100, "OW: Max sell fee rate is 10%");
         sellFeeRate = _sellFeeRate;
         emit UpdateSellFeeRate(_sellFeeRate);
     }
