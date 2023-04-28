@@ -38,11 +38,10 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
      * @dev This function is alternative way to submit funds. Supports optional referral address.
      * @return Amount of StETH shares generated
      */
-    function submit(address _referral, uint256 _amount)
-        external
-        nonReentrant
-        returns (uint256)
-    {
+    function submit(
+        address _referral,
+        uint256 _amount
+    ) external nonReentrant returns (uint256) {
         return _submit(_referral, _amount);
     }
 
@@ -59,10 +58,10 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
      * @param _referral address of referral.
      * @return amount of StETH shares generated
      */
-    function _submit(address _referral, uint256 _amount)
-        internal
-        returns (uint256)
-    {
+    function _submit(
+        address _referral,
+        uint256 _amount
+    ) internal returns (uint256) {
         address account = msg.sender;
         require(_amount != 0, "ZERO_DEPOSIT");
         require(
@@ -71,7 +70,7 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
         );
         uint256 sharesAmount = getSharesByPooledEth(_amount);
         IERC20(depositToken).transferFrom(account, address(this), _amount);
-        stakedAmounts[account] += _amount;
+        stakedAmounts[account] = stakedAmounts[account].add(_amount);
 
         if (sharesAmount == 0) {
             // totalControlledEther is 0: either the first-ever deposit or complete slashing
@@ -125,10 +124,9 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
         unstakingFee = _fee;
     }
 
-    function setUnstakingThreshold(uint256 _threshold)
-        public
-        isOperator(msg.sender)
-    {
+    function setUnstakingThreshold(
+        uint256 _threshold
+    ) public isOperator(msg.sender) {
         require(_threshold != 0, "OpenStaking: invalid threshold");
         unstakingThreshold = _threshold;
     }
@@ -137,11 +135,9 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
         return stakedAmounts[_account];
     }
 
-    function getStakeInfo(address _account)
-        public
-        view
-        returns (uint256[] memory)
-    {
+    function getStakeInfo(
+        address _account
+    ) public view returns (uint256[] memory) {
         uint256[] memory result = new uint256[](8);
         result[0] = getTotalPooledEther();
         result[1] = getTotalShares();
@@ -162,9 +158,10 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
     /**
      * @dev Emits {Transfer} and {TransferShares} events where `from` is 0 address. Indicates mint events.
      */
-    function _emitTransferAfterMintingShares(address _to, uint256 _sharesAmount)
-        internal
-    {
+    function _emitTransferAfterMintingShares(
+        address _to,
+        uint256 _sharesAmount
+    ) internal {
         emit Transfer(address(0), _to, getPooledEthByShares(_sharesAmount));
         emit TransferShares(address(0), _to, _sharesAmount);
     }
