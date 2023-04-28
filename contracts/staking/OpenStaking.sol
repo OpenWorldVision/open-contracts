@@ -69,7 +69,6 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
             "OpenStaking: exceed amounts"
         );
         uint256 sharesAmount = getSharesByPooledEth(_amount);
-        IERC20(depositToken).transferFrom(account, address(this), _amount);
         stakedAmounts[account] = stakedAmounts[account].add(_amount);
 
         if (sharesAmount == 0) {
@@ -83,6 +82,7 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
         lastClaimTimestamp[account] = block.timestamp;
 
         emit Submitted(account, _amount, _referral);
+        IERC20(depositToken).transferFrom(account, address(this), _amount);
 
         _emitTransferAfterMintingShares(account, sharesAmount);
         return sharesAmount;
@@ -105,8 +105,9 @@ contract OpenStaking is StOPEN, ReentrancyGuard {
         uint256 amountAfterFee = getAmountAfterFee(
             getPooledEthByShares(shareAmount)
         );
+        uint256 newTotalShares = _burnShares(account, shareAmount);
         IERC20(depositToken).transfer(account, amountAfterFee);
-        return _burnShares(account, shareAmount);
+        return newTotalShares;
     }
 
     function addOperator(address _account) public isOperator(msg.sender) {
