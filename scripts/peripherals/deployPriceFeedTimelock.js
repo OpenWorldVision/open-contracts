@@ -4,7 +4,7 @@ const { expandDecimals } = require("../../test/shared/utilities")
 const network = (process.env.HARDHAT_NETWORK || 'mainnet');
 
 async function getArbValues() {
-  const tokenManager = { address: "0xddDc546e07f1374A07b270b7d863371e575EA96A" }
+  const tokenManager = { address: "0x07f3E5DA3f9AaA2ba21b0c2177CD0AE5457CDCaB" }
 
   return { tokenManager }
 }
@@ -37,7 +37,7 @@ async function getValues() {
 
 async function main() {
 
-  const admin = "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517"
+  const admin = "0x07f3E5DA3f9AaA2ba21b0c2177CD0AE5457CDCaB"
   const buffer = network === "testnet" ? 60 : 24 * 60 * 60
 
   const { tokenManager } = await getValues()
@@ -51,11 +51,7 @@ async function main() {
   const deployedTimelock = await contractAt("PriceFeedTimelock", timelock.address)
 
   const signers = [
-    "0x0EaEA9558eFF1d4b76b347A39f54d8CDf01F990F", // account test 1
-    "0x33EDbEc831AD335f26fFC06EB07311cC99F50084", // account test 2
-    "0x3134d254202E5dd2d98E4ba10CaE3703199c3FB0", // account test 3
-    "0x6f8e190d41c6D5F0Dc18122b01C339761A4deDbe", // account test 4
-    "0x5287a0ad42b2Cfdd14265949ab4cb9Ac5867FD27" // account test 5
+    "0x5678917FfEb77827Aafc33419E99DaCd707313a9", // deployer
   ]
 
   for (let i = 0; i < signers.length; i++) {
@@ -64,8 +60,8 @@ async function main() {
   }
 
   const keepers = [
-    "0x2CC6D07871A1c0655d6A7c9b0Ad24bED8f940517", // deployer
-    "0x9B82B9Ab7570Ae452D9FF5411F1bE2bad08EF4c4"
+    "0x5678917FfEb77827Aafc33419E99DaCd707313a9", // deployer
+    "0xe6fd8f16CA620854289571FBBB7eE743437fc027"
   ]
 
   for (let i = 0; i < keepers.length; i++) {
