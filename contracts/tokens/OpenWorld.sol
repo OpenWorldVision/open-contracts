@@ -251,6 +251,14 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         _mint(receiver, amount);
     }
 
+    function setPaused(bool _isPaused) public onlyOwner {
+        if (_isPaused) {
+            _pause();
+        } else {
+            _unpause();
+        }
+    }
+
     /**
      * @dev Returns the name of the token.
      */
