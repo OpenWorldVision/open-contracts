@@ -28,13 +28,13 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
     event RemoveSellAddress(address sellAddress);
     event UpdateExceptionAddress(address exceptionAddress);
 
-    function initialize(address owner_) public initializer {
+    function initialize(address _initTokenHolder) public initializer {
         ERC20Upgradeable.__ERC20_init("OpenWorld", "OPEN");
         OwnableUpgradeable.__Ownable_init();
         ERC20PausableUpgradeable.__ERC20Pausable_init();
-        feeAddress = owner_;
+        feeAddress = _initTokenHolder;
         sellFeeRate = 8;
-        _mint(owner_, INITIAL_SUPPLY);
+        _mint(_initTokenHolder, INITIAL_SUPPLY);
         _approve(address(this), msg.sender, totalSupply());
     }
 
