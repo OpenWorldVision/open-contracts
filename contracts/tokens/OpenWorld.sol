@@ -78,12 +78,9 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         uint256 _value
     ) public override whenNotPaused returns (bool) {
         require(
-            tokenBlacklist[_from] == false && tokenBlacklist[_to] == false,
-            "Blacklist address cannot transfer"
-        );
-
-        require(
-            tokenBlacklist[msg.sender] == false,
+            !tokenBlacklist[_from] &&
+                !tokenBlacklist[_to] &&
+                !tokenBlacklist[msg.sender],
             "Blacklist address cannot transfer"
         );
 
