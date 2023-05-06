@@ -12,7 +12,6 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
     mapping(address => bool) private tokenBlacklist;
     mapping(address => bool) private _sellAddresses;
     mapping(address => bool) private _exceptionAddresses;
-    mapping(address => uint256) private _nextClaimTime;
 
     uint256 public sellFeeRate;
     address public feeAddress;
