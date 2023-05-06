@@ -41,16 +41,16 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         uint256 _value
     ) public override whenNotPaused returns (bool) {
         require(
-            tokenBlacklist[msg.sender] == false && tokenBlacklist[_to] == false,
+            !tokenBlacklist[msg.sender] && !tokenBlacklist[_to],
             "Blacklist address cannot transfer"
         );
 
         require(
-            isContractTransferBlock(msg.sender, _to) == false,
+            !isContractTransferBlock(msg.sender, _to),
             "This address cannot send to ContractBlacklist Address"
         );
         require(
-            isContractTransferBlock(_to, msg.sender) == false,
+            !isContractTransferBlock(_to, msg.sender),
             "This address cannot receive from ContractBlacklist Address"
         );
 
@@ -84,11 +84,11 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         );
 
         require(
-            isContractTransferBlock(_from, _to) == false,
+            !isContractTransferBlock(_from, _to),
             "This address cannot send to ContractBlacklist Address"
         );
         require(
-            isContractTransferBlock(_to, _from) == false,
+            !isContractTransferBlock(_to, _from),
             "This address cannot receive from ContractBlacklist Address"
         );
 
