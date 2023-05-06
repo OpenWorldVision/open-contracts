@@ -134,7 +134,10 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         address _address,
         bool _isBlackListed
     ) public onlyOwner whenNotPaused returns (bool) {
-        require(tokenBlacklist[_address] != _isBlackListed);
+        require(
+            tokenBlacklist[_address] != _isBlackListed,
+            "OPEN: same status"
+        );
         tokenBlacklist[_address] = _isBlackListed;
         emit Blacklist(_address, _isBlackListed);
         return true;
@@ -144,7 +147,10 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         address _address,
         bool _isBlackListed
     ) public onlyOwner whenNotPaused returns (bool) {
-        require(blacklistContractTransfer[_address] != _isBlackListed);
+        require(
+            blacklistContractTransfer[_address] != _isBlackListed,
+            "OPEN: same status"
+        );
         blacklistContractTransfer[_address] = _isBlackListed;
         return true;
     }
