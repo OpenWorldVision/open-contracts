@@ -15,7 +15,6 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
 
     uint256 public sellFeeRate;
     address public feeAddress;
-    address public stakerAddress;
 
     mapping(address => bool) private blacklistContractTransfer;
 
@@ -203,10 +202,6 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
 
     function isExceptionAddress(address account) public view returns (bool) {
         return _exceptionAddresses[account];
-    }
-
-    function setStakerAddress(address account) public onlyOwner {
-        stakerAddress = account;
     }
 
     function getValuesWithSellRate(
