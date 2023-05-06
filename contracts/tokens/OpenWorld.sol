@@ -19,8 +19,6 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
     mapping(address => bool) private blacklistContractTransfer;
 
     event Blacklist(address indexed blackListed, bool value);
-    event Mint(address indexed from, address indexed to, uint256 value);
-    event Burn(address indexed burner, uint256 value);
     event UpdateSellFeeRate(uint256 sellFeeRate);
     event AddSellAddress(address sellAddress);
     event RemoveSellAddress(address sellAddress);
