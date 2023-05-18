@@ -12,29 +12,25 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
     mapping(address => bool) private tokenBlacklist;
     mapping(address => bool) private _sellAddresses;
     mapping(address => bool) private _exceptionAddresses;
-    mapping(address => uint256) private _nextClaimTime;
 
     uint256 public sellFeeRate;
     address public feeAddress;
-    address public stakerAddress;
 
     mapping(address => bool) private blacklistContractTransfer;
 
     event Blacklist(address indexed blackListed, bool value);
-    event Mint(address indexed from, address indexed to, uint256 value);
-    event Burn(address indexed burner, uint256 value);
     event UpdateSellFeeRate(uint256 sellFeeRate);
     event AddSellAddress(address sellAddress);
     event RemoveSellAddress(address sellAddress);
     event UpdateExceptionAddress(address exceptionAddress);
 
-    function initialize(address owner_) public initializer {
+    function initialize(address _initTokenHolder) public initializer {
         ERC20Upgradeable.__ERC20_init("OpenWorld", "OPEN");
         OwnableUpgradeable.__Ownable_init();
         ERC20PausableUpgradeable.__ERC20Pausable_init();
-        feeAddress = owner_;
+        feeAddress = _initTokenHolder;
         sellFeeRate = 8;
-        _mint(owner_, INITIAL_SUPPLY);
+        _mint(_initTokenHolder, INITIAL_SUPPLY);
         _approve(address(this), msg.sender, totalSupply());
     }
 
@@ -43,16 +39,16 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         uint256 _value
     ) public override whenNotPaused returns (bool) {
         require(
-            tokenBlacklist[msg.sender] == false && tokenBlacklist[_to] == false,
+            !tokenBlacklist[msg.sender] && !tokenBlacklist[_to],
             "Blacklist address cannot transfer"
         );
 
         require(
-            isContractTransferBlock(msg.sender, _to) == false,
+            !isContractTransferBlock(msg.sender, _to),
             "This address cannot send to ContractBlacklist Address"
         );
         require(
-            isContractTransferBlock(_to, msg.sender) == false,
+            !isContractTransferBlock(_to, msg.sender),
             "This address cannot receive from ContractBlacklist Address"
         );
 
@@ -79,21 +75,18 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         uint256 _value
     ) public override whenNotPaused returns (bool) {
         require(
-            tokenBlacklist[_from] == false && tokenBlacklist[_to] == false,
+            !tokenBlacklist[_from] &&
+                !tokenBlacklist[_to] &&
+                !tokenBlacklist[msg.sender],
             "Blacklist address cannot transfer"
         );
 
         require(
-            tokenBlacklist[msg.sender] == false,
-            "Blacklist address cannot transfer"
-        );
-
-        require(
-            isContractTransferBlock(_from, _to) == false,
+            !isContractTransferBlock(_from, _to),
             "This address cannot send to ContractBlacklist Address"
         );
         require(
-            isContractTransferBlock(_to, _from) == false,
+            !isContractTransferBlock(_to, _from),
             "This address cannot receive from ContractBlacklist Address"
         );
 
@@ -131,7 +124,7 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         return super.decreaseAllowance(_spender, _subtractedValue);
     }
 
-    function burn(uint256 _value) public {
+    function burn(uint256 _value) public whenNotPaused {
         _burn(msg.sender, _value);
     }
 
@@ -139,7 +132,10 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         address _address,
         bool _isBlackListed
     ) public onlyOwner whenNotPaused returns (bool) {
-        require(tokenBlacklist[_address] != _isBlackListed);
+        require(
+            tokenBlacklist[_address] != _isBlackListed,
+            "OPEN: same status"
+        );
         tokenBlacklist[_address] = _isBlackListed;
         emit Blacklist(_address, _isBlackListed);
         return true;
@@ -149,7 +145,10 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         address _address,
         bool _isBlackListed
     ) public onlyOwner whenNotPaused returns (bool) {
-        require(blacklistContractTransfer[_address] != _isBlackListed);
+        require(
+            blacklistContractTransfer[_address] != _isBlackListed,
+            "OPEN: same status"
+        );
         blacklistContractTransfer[_address] = _isBlackListed;
         return true;
     }
@@ -186,6 +185,7 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
     }
 
     function setSellFeeRate(uint256 _sellFeeRate) public onlyOwner {
+        require(_sellFeeRate <= 100, "OW: Max sell fee rate is 10%");
         sellFeeRate = _sellFeeRate;
         emit UpdateSellFeeRate(_sellFeeRate);
     }
@@ -206,10 +206,6 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
 
     function isExceptionAddress(address account) public view returns (bool) {
         return _exceptionAddresses[account];
-    }
-
-    function setStakerAddress(address account) public onlyOwner {
-        stakerAddress = account;
     }
 
     function getValuesWithSellRate(
@@ -248,6 +244,14 @@ contract OPEN is ERC20PausableUpgradeable, OwnableUpgradeable {
         uint256 amount
     ) public onlyOwner {
         _mint(receiver, amount);
+    }
+
+    function setPaused(bool _isPaused) public onlyOwner {
+        if (_isPaused) {
+            _pause();
+        } else {
+            _unpause();
+        }
     }
 
     /**

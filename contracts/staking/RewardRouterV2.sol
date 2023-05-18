@@ -103,40 +103,6 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
         IERC20(_token).safeTransfer(_account, _amount);
     }
 
-    function batchStakeOpenForAccount(
-        address[] memory _accounts,
-        uint256[] memory _amounts
-    ) external nonReentrant onlyGov {
-        address _open = open;
-        for (uint256 i = 0; i < _accounts.length; i++) {
-            _stakeOpen(msg.sender, _accounts[i], _open, _amounts[i]);
-        }
-    }
-
-    function stakeOpenForAccount(address _account, uint256 _amount)
-        external
-        nonReentrant
-        onlyGov
-    {
-        _stakeOpen(msg.sender, _account, open, _amount);
-    }
-
-    function stakeOpen(uint256 _amount) external nonReentrant {
-        _stakeOpen(msg.sender, msg.sender, open, _amount);
-    }
-
-    function stakeEsOpen(uint256 _amount) external nonReentrant {
-        _stakeOpen(msg.sender, msg.sender, esOpen, _amount);
-    }
-
-    function unstakeOpen(uint256 _amount) external nonReentrant {
-        _unstakeOpen(msg.sender, open, _amount, true);
-    }
-
-    function unstakeEsOpen(uint256 _amount) external nonReentrant {
-        _unstakeOpen(msg.sender, esOpen, _amount, true);
-    }
-
     function mintAndStakeOapForAccount(
         address _token,
         uint256 _amount,
@@ -208,12 +174,10 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
         return oapAmount;
     }
 
-    function mintAndStakeOapETH(uint256 _minUsdo, uint256 _minOap)
-        external
-        payable
-        nonReentrant
-        returns (uint256)
-    {
+    function mintAndStakeOapETH(
+        uint256 _minUsdo,
+        uint256 _minOap
+    ) external payable nonReentrant returns (uint256) {
         require(msg.value > 0, "RewardRouter: invalid msg.value");
 
         IWETH(weth).deposit{value: msg.value}();
@@ -346,11 +310,9 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
         _compound(msg.sender);
     }
 
-    function compoundForAccount(address _account)
-        external
-        nonReentrant
-        onlyGov
-    {
+    function compoundForAccount(
+        address _account
+    ) external nonReentrant onlyGov {
         _compound(_account);
     }
 
@@ -383,11 +345,9 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
         }
     }
 
-    function batchCompoundForAccounts(address[] memory _accounts)
-        external
-        nonReentrant
-        onlyGov
-    {
+    function batchCompoundForAccounts(
+        address[] memory _accounts
+    ) external nonReentrant onlyGov {
         for (uint256 i = 0; i < _accounts.length; i++) {
             _compound(_accounts[i]);
         }
@@ -426,22 +386,6 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
 
         _validateReceiver(receiver);
         _compound(_sender);
-
-        uint256 stakedOpen = IRewardTracker(stakedOpenTracker).depositBalances(
-            _sender,
-            open
-        );
-        if (stakedOpen > 0) {
-            _unstakeOpen(_sender, open, stakedOpen, false);
-            _stakeOpen(_sender, receiver, open, stakedOpen);
-        }
-
-        uint256 stakedEsOpen = IRewardTracker(stakedOpenTracker)
-            .depositBalances(_sender, esOpen);
-        if (stakedEsOpen > 0) {
-            _unstakeOpen(_sender, esOpen, stakedEsOpen, false);
-            _stakeOpen(_sender, receiver, esOpen, stakedEsOpen);
-        }
 
         uint256 stakedBnOpen = IRewardTracker(feeOpenTracker).depositBalances(
             _sender,
@@ -581,29 +525,7 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
     }
 
     function _compound(address _account) private {
-        _compoundOpen(_account);
         _compoundOap(_account);
-    }
-
-    function _compoundOpen(address _account) private {
-        uint256 esOpenAmount = IRewardTracker(stakedOpenTracker)
-            .claimForAccount(_account, _account);
-        if (esOpenAmount > 0) {
-            _stakeOpen(_account, _account, esOpen, esOpenAmount);
-        }
-
-        uint256 bnOpenAmount = IRewardTracker(bonusOpenTracker).claimForAccount(
-            _account,
-            _account
-        );
-        if (bnOpenAmount > 0) {
-            IRewardTracker(feeOpenTracker).stakeForAccount(
-                _account,
-                _account,
-                bnOpen,
-                bnOpenAmount
-            );
-        }
     }
 
     function _compoundOap(address _account) private {
@@ -611,100 +533,5 @@ contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
             _account,
             _account
         );
-        if (esOpenAmount > 0) {
-            _stakeOpen(_account, _account, esOpen, esOpenAmount);
-        }
-    }
-
-    function _stakeOpen(
-        address _fundingAccount,
-        address _account,
-        address _token,
-        uint256 _amount
-    ) private {
-        require(_amount > 0, "RewardRouter: invalid _amount");
-
-        IRewardTracker(stakedOpenTracker).stakeForAccount(
-            _fundingAccount,
-            _account,
-            _token,
-            _amount
-        );
-        IRewardTracker(bonusOpenTracker).stakeForAccount(
-            _account,
-            _account,
-            stakedOpenTracker,
-            _amount
-        );
-        IRewardTracker(feeOpenTracker).stakeForAccount(
-            _account,
-            _account,
-            bonusOpenTracker,
-            _amount
-        );
-
-        emit StakeOpen(_account, _token, _amount);
-    }
-
-    function _unstakeOpen(
-        address _account,
-        address _token,
-        uint256 _amount,
-        bool _shouldReduceBnOpen
-    ) private {
-        require(_amount > 0, "RewardRouter: invalid _amount");
-
-        uint256 balance = IRewardTracker(stakedOpenTracker).stakedAmounts(
-            _account
-        );
-
-        IRewardTracker(feeOpenTracker).unstakeForAccount(
-            _account,
-            bonusOpenTracker,
-            _amount,
-            _account
-        );
-        IRewardTracker(bonusOpenTracker).unstakeForAccount(
-            _account,
-            stakedOpenTracker,
-            _amount,
-            _account
-        );
-        IRewardTracker(stakedOpenTracker).unstakeForAccount(
-            _account,
-            _token,
-            _amount,
-            _account
-        );
-
-        if (_shouldReduceBnOpen) {
-            uint256 bnOpenAmount = IRewardTracker(bonusOpenTracker)
-                .claimForAccount(_account, _account);
-            if (bnOpenAmount > 0) {
-                IRewardTracker(feeOpenTracker).stakeForAccount(
-                    _account,
-                    _account,
-                    bnOpen,
-                    bnOpenAmount
-                );
-            }
-
-            uint256 stakedBnOpen = IRewardTracker(feeOpenTracker)
-                .depositBalances(_account, bnOpen);
-            if (stakedBnOpen > 0) {
-                uint256 reductionAmount = stakedBnOpen.mul(_amount).div(
-                    balance
-                );
-                IRewardTracker(feeOpenTracker).unstakeForAccount(
-                    _account,
-                    bnOpen,
-                    reductionAmount,
-                    _account
-                );
-                IMintable(bnOpen).burn(_account, reductionAmount);
-            }
-        }
-
-        emit UnstakeOpen(_account, _token, _amount);
     }
 }
